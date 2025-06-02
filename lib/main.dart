@@ -7,7 +7,6 @@ import 'package:friendly_card_web/utils/inital_binding.dart';
 import 'package:friendly_card_web/views/login_page.dart';
 import 'package:get/get.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_localization/flutter_localization.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
