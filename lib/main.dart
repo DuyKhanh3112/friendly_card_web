@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:friendly_card_web/utils/inital_binding.dart';
+import 'package:friendly_card_web/views/admin/admin_page.dart';
 import 'package:friendly_card_web/views/login_page.dart';
 import 'package:get/get.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -35,6 +36,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      title: 'Friendly Card',
       builder: EasyLoading.init(),
       debugShowCheckedModeBanner: false,
       localizationsDelegates: const [
@@ -51,7 +53,10 @@ class MyApp extends StatelessWidget {
       locale: const Locale('vi'),
       initialRoute: "/",
       initialBinding: InitalBinding(),
-      getPages: [GetPage(name: '/', page: () => const LoginPage())],
+      getPages: [
+        GetPage(name: '/', page: () => const LoginPage()),
+        GetPage(name: '/admin', page: () => const AdminPage())
+      ],
     );
   }
 }

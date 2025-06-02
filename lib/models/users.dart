@@ -11,6 +11,7 @@ class Users {
   String? phone;
   Timestamp update_at;
   String role;
+  bool active;
 
   Users({
     required this.id,
@@ -21,6 +22,7 @@ class Users {
     this.phone,
     required this.update_at,
     required this.role,
+    required this.active,
   });
 
   factory Users.initUser() {
@@ -33,6 +35,7 @@ class Users {
       role: 'learner',
       email: '',
       phone: '',
+      active: true,
     );
   }
 
@@ -46,6 +49,7 @@ class Users {
       role: json['role'],
       email: json['email'] ?? '',
       phone: json['phone'] ?? '',
+      active: json['active'],
     );
   }
 
@@ -58,7 +62,8 @@ class Users {
       'update_at': update_at,
       'role': role,
       'email': email ?? '',
-      'phone': phone ?? ''
+      'phone': phone ?? '',
+      'active': active
     };
   }
 
@@ -71,7 +76,8 @@ class Users {
       'update_at': update_at,
       'role': role,
       'email': email ?? '',
-      'phone': phone ?? ''
+      'phone': phone ?? '',
+      'active': active
     };
   }
 }
