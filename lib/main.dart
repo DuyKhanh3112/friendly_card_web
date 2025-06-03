@@ -53,8 +53,16 @@ class MyApp extends StatelessWidget {
       initialRoute: "/",
       initialBinding: InitalBinding(),
       getPages: [
-        GetPage(name: '/', page: () => const LoginPage()),
-        GetPage(name: '/admin', page: () => const AdminPage()),
+        GetPage(
+          name: '/',
+          page: () => const LoginPage(),
+          // binding:
+        ),
+        GetPage(
+          name: '/admin',
+          page: () => const AdminPage(),
+          // binding: CheckLoginBingding(),
+        ),
       ],
     );
   }

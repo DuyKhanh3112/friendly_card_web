@@ -2,6 +2,7 @@
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 Future<void> showAlertDialog(
   BuildContext context,
@@ -22,6 +23,7 @@ Future<void> showAlertDialog(
     context: context,
     dialogType: type,
     animType: AnimType.rightSlide,
+    width: Get.width * 0.4,
     title: title,
     desc: desc,
     btnOkOnPress: () {},

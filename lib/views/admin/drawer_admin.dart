@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:friendly_card_web/controllers/main_controller.dart';
+import 'package:friendly_card_web/controllers/users_controller.dart';
 import 'package:get/get.dart';
 
 class DrawerAdmin extends StatelessWidget {
@@ -8,6 +10,9 @@ class DrawerAdmin extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    MainController mainController = Get.find<MainController>();
+    UsersController usersController = Get.find<UsersController>();
+
     return Container(
       width: Get.width * 0.35,
       decoration: const BoxDecoration(
@@ -18,22 +23,107 @@ class DrawerAdmin extends StatelessWidget {
           Expanded(
             child: ListView(
               children: [
-                ListTile(
-                  // leading: Image.asset(
-                  //   'assets/images/personal_info_icon.png',
-                  //   width: 40,
-                  // ),
-                  title: const Text(
-                    'Thông tin cá nhân',
-                    style: TextStyle(
-                      color: Colors.green,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: Get.width * 0.01,
+                    vertical: Get.height * 0.02,
                   ),
-                  onTap: () {
-                    Get.back();
-                  },
+                  child: ListTile(
+                    leading: Image.asset(
+                      'images/personal_info_icon.png',
+                      width: 64,
+                    ),
+                    title: const Text(
+                      'Thông tin cá nhân',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    onTap: () {
+                      mainController.numPageAdmin.value = 0;
+                      Get.back();
+                    },
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: Get.width * 0.01,
+                    vertical: Get.height * 0.01,
+                  ),
+                  child: ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.symmetric(
+                        // horizontal: 5,
+                        vertical: 3,
+                      ),
+                      child: Image.asset(
+                        'images/topic_icon.png',
+                        width: 64,
+                      ),
+                    ),
+                    title: const Text(
+                      'Chủ đề',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    onTap: () {
+                      mainController.numPageAdmin.value = 1;
+                      Get.back();
+                    },
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: Get.width * 0.01,
+                    vertical: Get.height * 0.02,
+                  ),
+                  child: ListTile(
+                    leading: Image.asset(
+                      'images/vocabulary_icon.png',
+                      width: 64,
+                    ),
+                    title: const Text(
+                      'Từ vựng',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    onTap: () {
+                      mainController.numPageAdmin.value = 2;
+                      Get.back();
+                    },
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: Get.width * 0.01,
+                    vertical: Get.height * 0.02,
+                  ),
+                  child: ListTile(
+                    leading: Image.asset(
+                      'images/vocabulary_icon.png',
+                      width: 64,
+                    ),
+                    title: const Text(
+                      'Đăng xuất',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    onTap: () async {
+                      await usersController.logout();
+                      // Get.back();
+                    },
+                  ),
                 ),
               ],
             ),

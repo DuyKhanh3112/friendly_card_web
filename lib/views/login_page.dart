@@ -1,5 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:friendly_card_web/components/custom_button.dart';
+import 'package:friendly_card_web/components/custom_dialog.dart';
 import 'package:friendly_card_web/components/custom_text_field.dart';
 import 'package:friendly_card_web/controllers/users_controller.dart';
 import 'package:friendly_card_web/loading_page.dart';
@@ -89,12 +93,12 @@ class LoginPage extends StatelessWidget {
                                       usernameController.value.text,
                                       passwordController.value.text);
                                   if (!res) {
-                                    // await showAlertDialog(
-                                    //   context,
-                                    //   DialogType.error,
-                                    //   'Đăng nhập không thành công!',
-                                    //   'Tài khoản hoặc mật khẩu không đúng.',
-                                    // );
+                                    await showAlertDialog(
+                                      context,
+                                      DialogType.error,
+                                      'Đăng nhập không thành công!',
+                                      'Tài khoản hoặc mật khẩu không đúng.',
+                                    );
                                   }
                                 }
                               },

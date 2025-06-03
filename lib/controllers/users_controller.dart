@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:friendly_card_web/controllers/main_controller.dart';
 import 'package:friendly_card_web/models/users.dart';
 import 'package:get/get.dart';
 
@@ -10,13 +11,19 @@ class UsersController extends GetxController {
   CollectionReference usersCollection =
       FirebaseFirestore.instance.collection('users');
 
+  void checkLogin() {
+    if (user.value.id == '' || role.value == '') {
+      Get.toNamed('/');
+    }
+  }
+
   Future<bool> login(String uname, String pword) async {
     loading.value = true;
     final snapshot = await usersCollection
         .where('username', isEqualTo: uname)
         .where('password', isEqualTo: pword)
         .where('active', isEqualTo: true)
-        .get();
+        .where('role', whereIn: ['admin', 'teacher']).get();
     if (snapshot.docs.isNotEmpty) {
       Map<String, dynamic> data =
           snapshot.docs[0].data() as Map<String, dynamic>;
@@ -37,7 +44,12 @@ class UsersController extends GetxController {
   }
 
   Future<void> logout() async {
+    loading.value = true;
+    MainController mainController = Get.find<MainController>();
+    mainController.numPageAdmin.value = 0;
     user.value = Users.initUser();
     role.value = '';
+    Get.toNamed('/');
+    loading.value = false;
   }
 }
