@@ -10,3 +10,10 @@ class InitalBinding extends Bindings {
     // Get.find<UsersController>().checkLogin();
   }
 }
+
+// class AdminBinding extends Bindings {
+//   @override
+//   void dependencies() {
+//     Get.find<UsersController>().checkLogin();
+//   }
+// }

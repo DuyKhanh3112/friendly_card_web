@@ -61,7 +61,6 @@ class MyApp extends StatelessWidget {
         GetPage(
           name: '/admin',
           page: () => const AdminPage(),
-          // binding: CheckLoginBingding(),
         ),
       ],
     );

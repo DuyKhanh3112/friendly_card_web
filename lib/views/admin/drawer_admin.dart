@@ -12,7 +12,6 @@ class DrawerAdmin extends StatelessWidget {
   Widget build(BuildContext context) {
     MainController mainController = Get.find<MainController>();
     UsersController usersController = Get.find<UsersController>();
-
     return Container(
       width: Get.width * 0.35,
       decoration: const BoxDecoration(

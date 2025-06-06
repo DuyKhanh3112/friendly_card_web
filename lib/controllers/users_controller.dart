@@ -11,10 +11,11 @@ class UsersController extends GetxController {
   CollectionReference usersCollection =
       FirebaseFirestore.instance.collection('users');
 
-  void checkLogin() {
-    if (user.value.id == '' || role.value == '') {
-      Get.toNamed('/');
+  bool checkLogin() {
+    if (user.value.id == '' || !['admin', 'teacher'].contains(role.value)) {
+      return false;
     }
+    return true;
   }
 
   Future<bool> login(String uname, String pword) async {
