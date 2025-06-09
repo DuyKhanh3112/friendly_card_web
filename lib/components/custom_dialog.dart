@@ -2,6 +2,7 @@
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:friendly_card_web/utils/app_color.dart';
 import 'package:get/get.dart';
 
 Future<void> showAlertDialog(
@@ -11,13 +12,13 @@ Future<void> showAlertDialog(
   String? desc,
 ) async {
   await AwesomeDialog(
-    titleTextStyle: const TextStyle(
-      color: Colors.green,
+    titleTextStyle: TextStyle(
+      color: AppColor.blue,
       fontWeight: FontWeight.bold,
       fontSize: 22,
     ),
-    descTextStyle: const TextStyle(
-      color: Colors.green,
+    descTextStyle: TextStyle(
+      color: AppColor.blue,
       fontSize: 16,
     ),
     context: context,
@@ -26,6 +27,7 @@ Future<void> showAlertDialog(
     width: Get.width * 0.4,
     title: title,
     desc: desc,
+    btnOkColor: AppColor.blue,
     btnOkOnPress: () {},
   ).show();
 }

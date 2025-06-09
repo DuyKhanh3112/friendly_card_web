@@ -12,6 +12,7 @@ class Users {
   Timestamp update_at;
   String role;
   String? avatar;
+  bool active;
 
   Users({
     required this.id,
@@ -23,9 +24,24 @@ class Users {
     this.avatar,
     required this.update_at,
     required this.role,
+    required this.active,
   });
 
   factory Users.initUser() {
+    return Users(
+      id: '',
+      username: '',
+      password: '',
+      fullname: '',
+      update_at: Timestamp.now(),
+      role: '',
+      email: '',
+      phone: '',
+      avatar: '',
+      active: true,
+    );
+  }
+  factory Users.initLearner() {
     return Users(
       id: '',
       username: '',
@@ -36,20 +52,37 @@ class Users {
       email: '',
       phone: '',
       avatar: '',
+      active: true,
+    );
+  }
+  factory Users.initTeacher() {
+    return Users(
+      id: '',
+      username: '',
+      password: '',
+      fullname: '',
+      update_at: Timestamp.now(),
+      role: 'teacher',
+      email: '',
+      phone: '',
+      avatar: '',
+      active: true,
     );
   }
 
   static Users fromJson(Map<String, dynamic> json) {
     return Users(
-        id: json['id'],
-        username: json['username'],
-        password: json['password'],
-        fullname: json['fullname'],
-        update_at: json['update_at'],
-        role: json['role'],
-        email: json['email'] ?? '',
-        phone: json['phone'] ?? '',
-        avatar: json['avatar'] ?? ',');
+      id: json['id'],
+      username: json['username'],
+      password: json['password'],
+      fullname: json['fullname'],
+      update_at: json['update_at'],
+      role: json['role'],
+      email: json['email'] ?? '',
+      phone: json['phone'] ?? '',
+      avatar: json['avatar'] ?? '',
+      active: json['active'],
+    );
   }
 
   Map<String, dynamic> toJson() {
@@ -63,12 +96,13 @@ class Users {
       'email': email ?? '',
       'phone': phone ?? '',
       'avatar': avatar ?? '',
+      'active': active,
     };
   }
 
   Map<String, dynamic> toVal() {
     return {
-      'id': id,
+      // 'id': id,
       'username': username,
       'password': password,
       'fullname': fullname,
@@ -77,6 +111,7 @@ class Users {
       'email': email ?? '',
       'phone': phone ?? '',
       'avatar': avatar ?? '',
+      'active': active,
     };
   }
 }

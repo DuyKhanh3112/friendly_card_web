@@ -29,7 +29,7 @@ class CustomSearchFiled extends StatelessWidget {
         ),
         decoration: InputDecoration(
           hint: Text(
-            '$hint',
+            hint,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,

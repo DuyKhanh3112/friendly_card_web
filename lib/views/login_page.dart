@@ -89,6 +89,25 @@ class LoginPage extends StatelessWidget {
                               required: true,
                               isPassword: true,
                             ),
+                            InkWell(
+                              onTap: () {},
+                              child: Container(
+                                alignment: Alignment.centerRight,
+                                padding: EdgeInsets.only(
+                                  right: Get.width * 0.01,
+                                ),
+                                child: Text(
+                                  'Quên mật khẩu ?',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColor.blue,
+                                    fontStyle: FontStyle.italic,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                            ),
                             CustomButton(
                               title: 'Đăng nhập',
                               bgColor: AppColor.blue,
