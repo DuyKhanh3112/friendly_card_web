@@ -162,7 +162,39 @@ class TeacherManagmentScreent extends StatelessWidget {
                   ),
                 ],
               ),
-            )
+            ),
+            Container(
+              padding: EdgeInsets.all(Get.height * 0.01),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.phone),
+                  Text(
+                    ' ${item.phone ?? ''}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.all(Get.height * 0.01),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.email),
+                  Text(
+                    ' ${item.email ?? ''}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
