@@ -1,12 +1,9 @@
-// ignore_for_file: deprecated_member_use, prefer_const_constructors
-
-import 'dart:math';
+// ignore_for_file: prefer_const_constructors
 
 import 'package:flexible_grid_view/flexible_grid_view.dart';
 import 'package:flutter/material.dart';
 import 'package:friendly_card_web/components/custom_button.dart';
 import 'package:friendly_card_web/components/custom_search_field.dart';
-import 'package:friendly_card_web/components/custome_title.dart';
 import 'package:friendly_card_web/controllers/teacher_controller.dart';
 import 'package:friendly_card_web/controllers/users_controller.dart';
 import 'package:friendly_card_web/widget/empty_data.dart';
@@ -22,7 +19,6 @@ class TeacherManagmentScreent extends StatelessWidget {
   Widget build(BuildContext context) {
     UsersController usersController = Get.find<UsersController>();
     TeacherController teacherController = Get.find<TeacherController>();
-    List nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     teacherController.loadAllData();
     return Obx(
       () {

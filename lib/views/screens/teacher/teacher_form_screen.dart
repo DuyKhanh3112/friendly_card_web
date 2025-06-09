@@ -20,8 +20,8 @@ class TeacherFormScreen extends StatelessWidget {
         TextEditingController(text: teacherController.teacher.value.phone);
     TextEditingController emailnameController =
         TextEditingController(text: teacherController.teacher.value.email);
-    TextEditingController rolenameController =
-        TextEditingController(text: 'Giáo viên');
+    // TextEditingController rolenameController =
+    //     TextEditingController(text: 'Giáo viên');
 
     return Obx(() {
       return teacherController.loading.value
