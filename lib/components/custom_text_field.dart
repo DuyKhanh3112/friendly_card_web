@@ -1,4 +1,4 @@
-// ignore_for_file: file_names
+// ignore_for_file: file_names, unnecessary_brace_in_string_interps
 
 import 'package:flutter/material.dart';
 import 'package:friendly_card_web/utils/app_color.dart';
@@ -47,6 +47,10 @@ class CustomTextField extends StatelessWidget {
               borderRadius: BorderRadius.all(
                 Radius.circular(25),
               ),
+            ),
+            errorStyle: const TextStyle(
+              color: Colors.red,
+              fontSize: 16,
             ),
             prefixIcon: label == ''
                 ? null
@@ -108,6 +112,7 @@ class CustomTextField extends StatelessWidget {
           },
           onChanged: onChanged ?? (value) {},
           readOnly: readOnly ?? false,
+          enabled: !(readOnly ?? false),
         ),
       ),
     );

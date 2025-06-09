@@ -37,7 +37,9 @@ class UsersController extends GetxController {
       if (role.value == 'admin') {
         Get.toNamed('/admin');
       }
-      if (role.value == 'teacher') {}
+      if (role.value == 'teacher') {
+        Get.toNamed('/teacher');
+      }
       return true;
     }
     loading.value = false;
@@ -51,6 +53,13 @@ class UsersController extends GetxController {
     user.value = Users.initUser();
     role.value = '';
     Get.toNamed('/');
+    loading.value = false;
+  }
+
+  Future<void> updateInformationUser() async {
+    loading.value = true;
+    user.value.update_at = Timestamp.now();
+    await usersCollection.doc(user.value.id).update(user.value.toVal());
     loading.value = false;
   }
 }
