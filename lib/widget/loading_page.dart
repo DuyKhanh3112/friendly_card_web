@@ -2,13 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:friendly_card_web/utils/app_color.dart';
 
 class LoadingPage extends StatelessWidget {
   const LoadingPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
         child: Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -16,12 +17,12 @@ class LoadingPage extends StatelessWidget {
         Stack(
           alignment: Alignment.center,
           children: [
-            Image(
+            const Image(
               image: AssetImage('images/logo_icon.png'),
               height: 100,
             ),
             SpinKitDualRing(
-              color: Colors.green,
+              color: AppColor.blue,
               size: 130,
             ),
           ],
@@ -30,7 +31,7 @@ class LoadingPage extends StatelessWidget {
           'Đang xử lý ...',
           style: TextStyle(
             fontSize: 20,
-            color: Colors.grey,
+            color: AppColor.blue,
           ),
         ),
       ],

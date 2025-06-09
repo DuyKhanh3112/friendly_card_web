@@ -1,7 +1,10 @@
 // ignore_for_file: file_names
 
 import 'package:flutter/material.dart';
+import 'package:friendly_card_web/utils/app_color.dart';
 import 'package:get/get.dart';
+
+enum ContactType { mail, phone }
 
 class CustomTextField extends StatelessWidget {
   const CustomTextField({
@@ -11,13 +14,17 @@ class CustomTextField extends StatelessWidget {
     this.onChanged,
     this.isPassword,
     this.controller,
+    this.readOnly,
+    this.type,
   });
 
   final String label;
   final TextEditingController? controller;
   final bool? required;
+  final bool? readOnly;
   final bool? isPassword;
   final void Function(String)? onChanged;
+  final ContactType? type;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +36,11 @@ class CustomTextField extends StatelessWidget {
         decoration: const BoxDecoration(),
         child: TextFormField(
           controller: controller,
-          style: const TextStyle(fontSize: 18),
+          style: TextStyle(
+            fontSize: 18,
+            color: AppColor.blue,
+            fontWeight: FontWeight.bold,
+          ),
           obscureText: hideContent.value,
           decoration: InputDecoration(
             border: const OutlineInputBorder(
@@ -37,17 +48,30 @@ class CustomTextField extends StatelessWidget {
                 Radius.circular(25),
               ),
             ),
-            prefixIcon: Padding(
-              padding: EdgeInsets.symmetric(horizontal: Get.width * 0.01),
-              child: Text(
-                '$label:',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey,
-                ),
-              ),
-            ),
+            prefixIcon: label == ''
+                ? null
+                : Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: Get.width * 0.01,
+                      // vertical: Get.width * 0.01,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        right: BorderSide(
+                          color: AppColor.labelBlue,
+                        ),
+                      ),
+                    ),
+                    width: Get.width * 0.1,
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColor.labelBlue,
+                      ),
+                    ),
+                  ),
             prefixIconConstraints:
                 const BoxConstraints(minWidth: 0, minHeight: 0),
             suffixIcon: isPassword == true
@@ -56,13 +80,13 @@ class CustomTextField extends StatelessWidget {
                       hideContent.value = !hideContent.value;
                     },
                     icon: hideContent.value
-                        ? const Icon(
+                        ? Icon(
                             Icons.remove_red_eye_outlined,
-                            color: Colors.green,
+                            color: AppColor.blue,
                           )
-                        : const Icon(
+                        : Icon(
                             Icons.remove_red_eye_rounded,
-                            color: Colors.green,
+                            color: AppColor.blue,
                           ),
                   )
                 : null,
@@ -72,10 +96,18 @@ class CustomTextField extends StatelessWidget {
               if (value == null || value.trim() == '' || value.isEmpty) {
                 return 'Vui lòng nhập $label';
               }
+              if (type == ContactType.mail) {
+                final RegExp emailRegExp =
+                    RegExp(r"^[\w-\.]+@([\w-]+\.){1,}[\w-]{1,}$");
+                if (!emailRegExp.hasMatch(value)) {
+                  return '${label} không hợp lệ.';
+                }
+              }
             }
             return null;
           },
           onChanged: onChanged ?? (value) {},
+          readOnly: readOnly ?? false,
         ),
       ),
     );

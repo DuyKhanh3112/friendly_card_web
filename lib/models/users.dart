@@ -11,6 +11,7 @@ class Users {
   String? phone;
   Timestamp update_at;
   String role;
+  String? avatar;
 
   Users({
     required this.id,
@@ -19,6 +20,7 @@ class Users {
     required this.fullname,
     this.email,
     this.phone,
+    this.avatar,
     required this.update_at,
     required this.role,
   });
@@ -33,20 +35,21 @@ class Users {
       role: 'learner',
       email: '',
       phone: '',
+      avatar: '',
     );
   }
 
   static Users fromJson(Map<String, dynamic> json) {
     return Users(
-      id: json['id'],
-      username: json['username'],
-      password: json['password'],
-      fullname: json['fullname'],
-      update_at: json['update_at'],
-      role: json['role'],
-      email: json['email'] ?? '',
-      phone: json['phone'] ?? '',
-    );
+        id: json['id'],
+        username: json['username'],
+        password: json['password'],
+        fullname: json['fullname'],
+        update_at: json['update_at'],
+        role: json['role'],
+        email: json['email'] ?? '',
+        phone: json['phone'] ?? '',
+        avatar: json['avatar'] ?? ',');
   }
 
   Map<String, dynamic> toJson() {
@@ -58,7 +61,8 @@ class Users {
       'update_at': update_at,
       'role': role,
       'email': email ?? '',
-      'phone': phone ?? ''
+      'phone': phone ?? '',
+      'avatar': avatar ?? '',
     };
   }
 
@@ -71,7 +75,8 @@ class Users {
       'update_at': update_at,
       'role': role,
       'email': email ?? '',
-      'phone': phone ?? ''
+      'phone': phone ?? '',
+      'avatar': avatar ?? '',
     };
   }
 }

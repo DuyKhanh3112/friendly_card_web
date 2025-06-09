@@ -6,7 +6,8 @@ import 'package:friendly_card_web/components/custom_button.dart';
 import 'package:friendly_card_web/components/custom_dialog.dart';
 import 'package:friendly_card_web/components/custom_text_field.dart';
 import 'package:friendly_card_web/controllers/users_controller.dart';
-import 'package:friendly_card_web/loading_page.dart';
+import 'package:friendly_card_web/widget/loading_page.dart';
+import 'package:friendly_card_web/utils/app_color.dart';
 import 'package:get/get.dart';
 
 class LoginPage extends StatelessWidget {
@@ -25,6 +26,7 @@ class LoginPage extends StatelessWidget {
           ? const LoadingPage()
           : SafeArea(
               child: Scaffold(
+                backgroundColor: AppColor.lightBlue,
                 body: Center(
                   child: Container(
                     constraints: BoxConstraints(
@@ -62,11 +64,13 @@ class LoginPage extends StatelessWidget {
                             Container(
                               padding: EdgeInsets.symmetric(
                                   vertical: Get.height * 0.02),
-                              child: const Text(
+                              child: Text(
                                 'Chào mừng bạn đến với FriendlyCard.\n Vui lòng đăng nhập để truy cập hệ thống.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColor.blue,
                                 ),
                               ),
                             ),
@@ -87,6 +91,8 @@ class LoginPage extends StatelessWidget {
                             ),
                             CustomButton(
                               title: 'Đăng nhập',
+                              bgColor: AppColor.blue,
+                              textColor: Colors.white,
                               onClicked: () async {
                                 if (formKey.currentState!.validate()) {
                                   bool res = await usersController.login(

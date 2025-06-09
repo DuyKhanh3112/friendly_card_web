@@ -4,10 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class CustomButton extends StatelessWidget {
-  const CustomButton({super.key, required this.title, this.onClicked});
+  const CustomButton({
+    super.key,
+    required this.title,
+    this.onClicked,
+    this.bgColor,
+    this.textColor,
+  });
 
   final String title;
-  final void Function()? onClicked;
+  final Future<void> Function()? onClicked;
+  final Color? bgColor;
+  final Color? textColor;
 
   @override
   Widget build(BuildContext context) {
@@ -18,17 +26,18 @@ class CustomButton extends StatelessWidget {
         onPressed: onClicked ?? () {},
         style: ButtonStyle(
           alignment: Alignment.center,
-          backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
+          backgroundColor:
+              MaterialStateProperty.all<Color>(bgColor ?? Colors.green),
         ),
         child: Container(
           alignment: Alignment.center,
           margin: EdgeInsets.symmetric(vertical: Get.height * 0.01),
           child: Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: textColor ?? Colors.white,
             ),
           ),
         ),

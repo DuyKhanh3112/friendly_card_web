@@ -35,13 +35,37 @@ class DrawerAdmin extends StatelessWidget {
                     title: const Text(
                       'Thông tin cá nhân',
                       style: TextStyle(
-                        color: Colors.green,
+                        // color: Colors.green,
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     onTap: () {
                       mainController.numPageAdmin.value = 0;
+                      Get.back();
+                    },
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: Get.width * 0.01,
+                    vertical: Get.height * 0.02,
+                  ),
+                  child: ListTile(
+                    leading: Image.asset(
+                      'images/personal_info_icon.png',
+                      width: 64,
+                    ),
+                    title: const Text(
+                      'Giáo viên chuyên môn',
+                      style: TextStyle(
+                        // color: Colors.green,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    onTap: () {
+                      mainController.numPageAdmin.value = 1;
                       Get.back();
                     },
                   ),
@@ -65,31 +89,7 @@ class DrawerAdmin extends StatelessWidget {
                     title: const Text(
                       'Chủ đề',
                       style: TextStyle(
-                        color: Colors.green,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    onTap: () {
-                      mainController.numPageAdmin.value = 1;
-                      Get.back();
-                    },
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: Get.width * 0.01,
-                    vertical: Get.height * 0.02,
-                  ),
-                  child: ListTile(
-                    leading: Image.asset(
-                      'images/vocabulary_icon.png',
-                      width: 64,
-                    ),
-                    title: const Text(
-                      'Từ vựng',
-                      style: TextStyle(
-                        color: Colors.green,
+                        // color: Colors.green,
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
@@ -111,9 +111,33 @@ class DrawerAdmin extends StatelessWidget {
                       width: 64,
                     ),
                     title: const Text(
+                      'Từ vựng',
+                      style: TextStyle(
+                        // color: Colors.green,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    onTap: () {
+                      mainController.numPageAdmin.value = 3;
+                      Get.back();
+                    },
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: Get.width * 0.01,
+                    vertical: Get.height * 0.02,
+                  ),
+                  child: ListTile(
+                    leading: Image.asset(
+                      'images/vocabulary_icon.png',
+                      width: 64,
+                    ),
+                    title: const Text(
                       'Đăng xuất',
                       style: TextStyle(
-                        color: Colors.green,
+                        // color: Colors.green,
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
