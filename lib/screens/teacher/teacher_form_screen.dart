@@ -1,4 +1,4 @@
-// ignore_for_file: sized_box_for_whitespace
+// ignore_for_file: sized_box_for_whitespace, prefer_const_constructors
 
 import 'package:flutter/material.dart';
 import 'package:friendly_card_web/components/custom_button.dart';
@@ -71,11 +71,14 @@ class TeacherFormScreen extends StatelessWidget {
                     alignment: Alignment.center,
                     child: Form(
                       key: formKey,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: ListView(
+                        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
                             width: Get.width * 0.4,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: Get.width * 0.05,
+                            ),
                             child: CustomTextField(
                               label: 'Tên tài khoản',
                               required: true,
@@ -86,6 +89,9 @@ class TeacherFormScreen extends StatelessWidget {
                           ),
                           Container(
                             width: Get.width * 0.4,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: Get.width * 0.05,
+                            ),
                             child: CustomTextField(
                               label: 'Họ tên',
                               required: true,
@@ -94,6 +100,9 @@ class TeacherFormScreen extends StatelessWidget {
                           ),
                           Container(
                             width: Get.width * 0.4,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: Get.width * 0.05,
+                            ),
                             child: CustomTextField(
                               label: 'Số điện thoại',
                               required: true,
@@ -102,6 +111,9 @@ class TeacherFormScreen extends StatelessWidget {
                           ),
                           Container(
                             width: Get.width * 0.4,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: Get.width * 0.05,
+                            ),
                             child: CustomTextField(
                               label: 'Email',
                               required: true,
@@ -111,6 +123,9 @@ class TeacherFormScreen extends StatelessWidget {
                           ),
                           Container(
                             width: Get.width * 0.4,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: Get.width * 0.05,
+                            ),
                             child: CustomTextField(
                               label: 'Quyền',
                               readOnly: true,
@@ -118,13 +133,49 @@ class TeacherFormScreen extends StatelessWidget {
                                   TextEditingController(text: 'Giáo viên'),
                             ),
                           ),
+                          teacherController.teacher.value.id == ''
+                              ? SizedBox()
+                              : Container(
+                                  width: Get.width * 0.4,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: Get.width * 0.05,
+                                  ),
+                                  child: CustomTextField(
+                                    label: 'Trạng thái',
+                                    readOnly: true,
+                                    controller: TextEditingController(
+                                        text: teacherController
+                                                .teacher.value.active
+                                            ? 'Đang hoạt động'
+                                            : 'Đã bị khóa'),
+                                  ),
+                                ),
+                          teacherController.teacher.value.active
+                              ? SizedBox()
+                              : Container(
+                                  width: Get.width * 0.4,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: Get.width * 0.05,
+                                  ),
+                                  child: CustomTextField(
+                                    label: 'Lý do bị khóa',
+                                    readOnly: true,
+                                    controller: TextEditingController(
+                                        text: teacherController
+                                                .teacher.value.reason_lock ??
+                                            ''),
+                                  ),
+                                ),
                           Container(
-                            width: Get.width * 0.4,
+                            // width: Get.width * 0.4,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: Get.width * 0.05,
+                            ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Container(
-                                  width: Get.width * 0.4,
+                                  width: Get.width * 0.45,
                                   child: CustomButton(
                                     title: 'Lưu giáo viên',
                                     onClicked: () async {

@@ -16,15 +16,19 @@ class CustomTextField extends StatelessWidget {
     this.controller,
     this.readOnly,
     this.type,
+    this.hint,
+    this.widthPrefix,
   });
 
   final String label;
+  final String? hint;
   final TextEditingController? controller;
   final bool? required;
   final bool? readOnly;
   final bool? isPassword;
   final void Function(String)? onChanged;
   final ContactType? type;
+  final double? widthPrefix;
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +47,15 @@ class CustomTextField extends StatelessWidget {
           ),
           obscureText: hideContent.value,
           decoration: InputDecoration(
+            errorMaxLines: 2,
+            hint: Text(
+              hint ?? '',
+              style: TextStyle(
+                fontSize: 16,
+                // fontWeight: FontWeight.bold,
+                color: AppColor.labelBlue,
+              ),
+            ),
             border: const OutlineInputBorder(
               borderRadius: BorderRadius.all(
                 Radius.circular(25),
@@ -66,7 +79,7 @@ class CustomTextField extends StatelessWidget {
                         ),
                       ),
                     ),
-                    width: Get.width * 0.1,
+                    width: widthPrefix ?? Get.width * 0.1,
                     child: Text(
                       label,
                       style: TextStyle(
@@ -104,7 +117,7 @@ class CustomTextField extends StatelessWidget {
                 final RegExp emailRegExp =
                     RegExp(r"^[\w-\.]+@([\w-]+\.){1,}[\w-]{1,}$");
                 if (!emailRegExp.hasMatch(value)) {
-                  return '${label} không hợp lệ.';
+                  return '${label} không hợp lệ. Ví dụ: user@gmail.com';
                 }
               }
             }

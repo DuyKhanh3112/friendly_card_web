@@ -54,11 +54,14 @@ class UserInformationScreen extends StatelessWidget {
                   alignment: Alignment.center,
                   child: Form(
                     key: formKey,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: ListView(
+                      // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Container(
                           width: Get.width * 0.4,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: Get.width * 0.05,
+                          ),
                           child: CustomTextField(
                             label: 'Tên tài khoản',
                             readOnly: true,
@@ -68,6 +71,9 @@ class UserInformationScreen extends StatelessWidget {
                         ),
                         Container(
                           width: Get.width * 0.4,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: Get.width * 0.05,
+                          ),
                           child: CustomTextField(
                             label: 'Họ tên',
                             readOnly: false,
@@ -76,6 +82,9 @@ class UserInformationScreen extends StatelessWidget {
                         ),
                         Container(
                           width: Get.width * 0.4,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: Get.width * 0.05,
+                          ),
                           child: CustomTextField(
                             label: 'Số điện thoại',
                             readOnly: false,
@@ -84,6 +93,9 @@ class UserInformationScreen extends StatelessWidget {
                         ),
                         Container(
                           width: Get.width * 0.4,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: Get.width * 0.05,
+                          ),
                           child: CustomTextField(
                             label: 'Email',
                             readOnly: false,
@@ -93,6 +105,9 @@ class UserInformationScreen extends StatelessWidget {
                         ),
                         Container(
                           width: Get.width * 0.4,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: Get.width * 0.05,
+                          ),
                           child: CustomTextField(
                             label: 'Quyền',
                             readOnly: true,
@@ -102,6 +117,9 @@ class UserInformationScreen extends StatelessWidget {
                         ),
                         Container(
                           width: Get.width * 0.4,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: Get.width * 0.05,
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [

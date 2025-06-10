@@ -1,5 +1,6 @@
-// ignore_for_file: prefer_const_constructors, sort_child_properties_last, invalid_use_of_protected_member, sized_box_for_whitespace, deprecated_member_use, unrelated_type_equality_checks
+// ignore_for_file: prefer_const_constructors, sort_child_properties_last, invalid_use_of_protected_member, sized_box_for_whitespace, deprecated_member_use, unrelated_type_equality_checks, avoid_unnecessary_containers
 
+import 'package:convert_vietnamese/convert_vietnamese.dart';
 import 'package:flexible_grid_view/flexible_grid_view.dart';
 import 'package:flutter/material.dart';
 import 'package:friendly_card_web/components/custom_button.dart';
@@ -15,14 +16,33 @@ import 'package:get/get.dart';
 class TeacherManagmentScreent extends StatelessWidget {
   const TeacherManagmentScreent({super.key});
 
+  void loadData(RxList<Users> listTeachers, RxInt currentPage,
+      Rx<TextEditingController> searchController) {
+    TeacherController teacherController = Get.find<TeacherController>();
+    listTeachers.value = teacherController.listTeachers
+        .where((t) => (removeDiacritics(t.fullname.toLowerCase()).contains(
+                removeDiacritics(searchController.value.text.toLowerCase())) ||
+            removeDiacritics(t.email!.toLowerCase()).contains(
+                removeDiacritics(searchController.value.text.toLowerCase())) ||
+            removeDiacritics(t.phone!.toLowerCase()).contains(
+                removeDiacritics(searchController.value.text.toLowerCase())) ||
+            removeDiacritics(t.username.toLowerCase()).contains(
+                removeDiacritics(searchController.value.text.toLowerCase()))))
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     UsersController usersController = Get.find<UsersController>();
     TeacherController teacherController = Get.find<TeacherController>();
+    Rx<TextEditingController> searchController = TextEditingController().obs;
+    RxList<Users> listTeachers = <Users>[].obs;
     RxInt currentPage = 0.obs;
     teacherController.loadAllData();
+
     return Obx(
       () {
+        loadData(listTeachers, currentPage, searchController);
         return usersController.loading.value || teacherController.loading.value
             ? const LoadingPage()
             : Scaffold(
@@ -40,8 +60,11 @@ class TeacherManagmentScreent extends StatelessWidget {
                             child: CustomSearchFiled(
                               hint:
                                   'Tìm kiếm giáo viên chuyên môn theo Tên đăng nhập, Họ tên, Email, Số điện thoại.',
-                              onChanged: (String value) {},
-                              controller: TextEditingController(),
+                              onChanged: (String value) {
+                                loadData(listTeachers, currentPage,
+                                    searchController);
+                              },
+                              controller: searchController.value,
                             ),
                           ),
                           Container(
@@ -49,14 +72,16 @@ class TeacherManagmentScreent extends StatelessWidget {
                             child: IconButton(
                               onPressed: () async {
                                 teacherController.loading.value = true;
+                                searchController.value.clear();
                                 await teacherController.loadAllData();
+                                loadData(listTeachers, currentPage,
+                                    searchController);
                                 teacherController.loading.value = false;
                               },
                               icon: Icon(
                                 Icons.refresh,
                                 color: AppColor.lightBlue,
                               ),
-                              // color: AppColor.blue,
                               style: ButtonStyle(
                                 backgroundColor:
                                     MaterialStateProperty.all<Color>(
@@ -88,10 +113,10 @@ class TeacherManagmentScreent extends StatelessWidget {
                               axisCount: GridLayoutEnum.threeElementsInRow,
                               crossAxisSpacing: 8,
                               mainAxisSpacing: 8,
-                              children: teacherController.listTeachers
+                              children: listTeachers.value
                                   .where((t) => t.active == (currentPage == 0))
                                   .map(
-                                    (item) => itemTeacher(item),
+                                    (item) => itemTeacher(context, item),
                                   )
                                   .toList(),
                             ),
@@ -123,12 +148,12 @@ class TeacherManagmentScreent extends StatelessWidget {
                     BottomNavigationBarItem(
                       icon: Icon(Icons.check_circle),
                       label:
-                          'Đang hoạt động (${teacherController.listTeachers.where((t) => t.active).length})',
+                          'Đang hoạt động (${listTeachers.where((t) => t.active).length})',
                     ),
                     BottomNavigationBarItem(
                       icon: Icon(Icons.cancel),
                       label:
-                          'Đã bị khóa (${teacherController.listTeachers.where((t) => !t.active).length})',
+                          'Đã bị khóa (${listTeachers.where((t) => !t.active).length})',
                     ),
                   ],
                   currentIndex: currentPage.value,
@@ -141,7 +166,7 @@ class TeacherManagmentScreent extends StatelessWidget {
     );
   }
 
-  Widget itemTeacher(Users item) {
+  Widget itemTeacher(BuildContext context, Users item) {
     TeacherController teacherController = Get.find<TeacherController>();
     return Container(
       margin: EdgeInsets.symmetric(
@@ -194,17 +219,131 @@ class TeacherManagmentScreent extends StatelessWidget {
                       color: item.active ? AppColor.blue : Colors.grey,
                     ),
                     onSelected: (value) async {
-                      Users teacher = teacherController.listTeachers.value
-                              .firstWhereOrNull((t) => t.id == item.id) ??
-                          Users.initUser();
-                      teacher.active = value == 'active';
-                      await teacherController.updateTeacher(teacher);
+                      if (value == 'active') {
+                        Users teacher = teacherController.listTeachers.value
+                                .firstWhereOrNull((t) => t.id == item.id) ??
+                            Users.initUser();
+                        teacher.active = true;
+                        teacher.reason_lock = '';
+                        await teacherController.updateTeacher(teacher);
+                      } else {
+                        TextEditingController reasonLockController =
+                            TextEditingController();
+                        final formKey = GlobalKey<FormState>();
+                        await Get.dialog(
+                          AlertDialog(
+                            backgroundColor: AppColor.lightBlue,
+                            titlePadding: EdgeInsets.symmetric(
+                              horizontal: Get.width * 0.025,
+                              vertical: Get.width * 0.01,
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: Get.width * 0.025,
+                              // vertical: Get.width * 0.01,
+                            ),
+                            buttonPadding: EdgeInsets.symmetric(
+                              horizontal: Get.width * 0.025,
+                              vertical: Get.width * 0.01,
+                            ),
+                            actionsPadding: EdgeInsets.symmetric(
+                              horizontal: Get.width * 0.025,
+                              vertical: Get.width * 0.01,
+                            ),
+                            title: Container(
+                                // padding: EdgeInsets.symmetric(
+                                //   horizontal: Get.width * 0.01,
+                                // ),
+                                child: Column(
+                              children: [
+                                Text(
+                                  'Lý do khóa tài khoản',
+                                  style: TextStyle(
+                                    color: AppColor.blue,
+                                  ),
+                                ),
+                                const Divider(),
+                              ],
+                            )),
+                            content: Form(
+                              key: formKey,
+                              child: TextFormField(
+                                controller: reasonLockController,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: AppColor.blue,
+                                  // fontWeight: FontWeight.bold,
+                                ),
+                                validator: (value) {
+                                  if (value == null ||
+                                      value.isEmpty ||
+                                      value.trim() == '') {
+                                    return 'Vui lòng nhập lý do khóa tài khoản.';
+                                  }
+                                  return null;
+                                },
+                                decoration: InputDecoration(
+                                  hintText: 'Nhập lý do khóa tài khoản',
+                                  hintStyle: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColor.labelBlue,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(25),
+                                    ),
+                                  ),
+                                  errorMaxLines: 2,
+                                ),
+                              ),
+                            ),
+                            actions: [
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                  backgroundColor:
+                                      WidgetStatePropertyAll(Colors.red),
+                                  foregroundColor:
+                                      WidgetStatePropertyAll(Colors.white),
+                                ),
+                                onPressed: () {
+                                  Get.back();
+                                },
+                                child: Text('Hủy'),
+                              ),
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                  backgroundColor:
+                                      WidgetStatePropertyAll(AppColor.blue),
+                                  foregroundColor:
+                                      WidgetStatePropertyAll(Colors.white),
+                                ),
+                                onPressed: () async {
+                                  if (formKey.currentState!.validate()) {
+                                    Users teacher = teacherController
+                                            .listTeachers.value
+                                            .firstWhereOrNull(
+                                                (t) => t.id == item.id) ??
+                                        Users.initUser();
+                                    teacher.active = false;
+                                    teacher.reason_lock =
+                                        reasonLockController.text;
+                                    Get.back();
+                                    await teacherController
+                                        .updateTeacher(teacher);
+                                  }
+                                },
+                                child: Text('Xác nhận'),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
                     },
                     color: AppColor.lightBlue,
                     itemBuilder: (context) => [
                       item.active
                           ? PopupMenuItem(
-                              value: 'block',
+                              value: 'lock',
                               child: ListTile(
                                 leading: Icon(
                                   Icons.circle,

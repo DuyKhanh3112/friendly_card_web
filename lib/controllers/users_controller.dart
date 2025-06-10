@@ -12,7 +12,9 @@ class UsersController extends GetxController {
       FirebaseFirestore.instance.collection('users');
 
   bool checkLogin() {
-    if (user.value.id == '' || !['admin', 'teacher'].contains(role.value)) {
+    if (user.value.id == '' ||
+        !['admin', 'teacher'].contains(role.value) ||
+        !user.value.active) {
       return false;
     }
     return true;
@@ -20,10 +22,12 @@ class UsersController extends GetxController {
 
   Future<bool> login(String uname, String pword) async {
     loading.value = true;
+    user.value = Users.initUser();
+
     final snapshot = await usersCollection
         .where('username', isEqualTo: uname)
         .where('password', isEqualTo: pword)
-        .where('active', isEqualTo: true)
+        // .where('active', isEqualTo: true)
         .where('role', whereIn: ['admin', 'teacher']).get();
     if (snapshot.docs.isNotEmpty) {
       Map<String, dynamic> data =
@@ -33,6 +37,9 @@ class UsersController extends GetxController {
 
       role.value = user.value.role;
       loading.value = false;
+      if (!user.value.active) {
+        return false;
+      }
 
       if (role.value == 'admin') {
         Get.toNamed('/admin');

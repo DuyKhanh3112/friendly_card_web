@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:friendly_card_web/controllers/main_controller.dart';
 import 'package:friendly_card_web/controllers/users_controller.dart';
+import 'package:friendly_card_web/views/login_page.dart';
 import 'package:friendly_card_web/views/teacher/drawer_teacher.dart';
 import 'package:friendly_card_web/widget/loading_page.dart';
 import 'package:friendly_card_web/utils/app_color.dart';
@@ -16,11 +17,9 @@ class TeacherPage extends StatelessWidget {
     MainController mainController = Get.find<MainController>();
 
     return Obx(() {
-      return
-          // !usersController.checkLogin()
-          //     ? const LoginPage()
-          //     :
-          usersController.loading.value
+      return !usersController.checkLogin()
+          ? const LoginPage()
+          : usersController.loading.value
               ? const LoadingPage()
               : SafeArea(
                   child: Scaffold(

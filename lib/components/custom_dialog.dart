@@ -31,3 +31,30 @@ Future<void> showAlertDialog(
     btnOkOnPress: () {},
   ).show();
 }
+
+Future<void> showFormDialog(
+  BuildContext context,
+  DialogType type,
+  String? title,
+  String? desc,
+) async {
+  // await AwesomeDialog(
+  //   titleTextStyle: TextStyle(
+  //     color: AppColor.blue,
+  //     fontWeight: FontWeight.bold,
+  //     fontSize: 22,
+  //   ),
+  //   descTextStyle: TextStyle(
+  //     color: AppColor.blue,
+  //     fontSize: 16,
+  //   ),
+  //   context: context,
+  //   dialogType: type,
+  //   animType: AnimType.rightSlide,
+  //   width: Get.width * 0.4,
+  //   title: title,
+
+  //   btnOkColor: AppColor.blue,
+  //   btnOkOnPress: () {},
+  // ).show();
+}

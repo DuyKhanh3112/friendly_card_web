@@ -14,7 +14,7 @@ class DrawerAdmin extends StatelessWidget {
     MainController mainController = Get.find<MainController>();
     UsersController usersController = Get.find<UsersController>();
     return Container(
-      width: Get.width * 0.35,
+      width: Get.width * 0.3,
       decoration: BoxDecoration(
         color: AppColor.lightBlue,
       ),
