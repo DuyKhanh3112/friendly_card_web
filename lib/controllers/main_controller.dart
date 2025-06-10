@@ -16,7 +16,6 @@ class MainController extends GetxController {
   List<String> titleTeacher = [
     'Thông tin cá nhân',
     'Quản lý chủ đề',
-    'Quản lý từ vựng',
   ];
 
   List<Widget> pageAdmin = [
@@ -27,6 +26,7 @@ class MainController extends GetxController {
   ];
 
   List<Widget> pageTeacher = [
+    const UserInformationScreen(),
     const UserInformationScreen(),
   ];
 }

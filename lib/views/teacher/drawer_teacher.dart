@@ -50,6 +50,36 @@ class DrawerTeacher extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.symmetric(
                     horizontal: Get.width * 0.01,
+                    vertical: Get.height * 0.01,
+                  ),
+                  child: ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.symmetric(
+                        // horizontal: 5,
+                        vertical: 3,
+                      ),
+                      child: Image.asset(
+                        'images/topic_icon.png',
+                        width: 64,
+                      ),
+                    ),
+                    title: Text(
+                      'Chủ đề',
+                      style: TextStyle(
+                        color: AppColor.blue,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    onTap: () {
+                      mainController.numPageTeacher.value = 1;
+                      Get.back();
+                    },
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: Get.width * 0.01,
                     vertical: Get.height * 0.02,
                   ),
                   child: ListTile(
