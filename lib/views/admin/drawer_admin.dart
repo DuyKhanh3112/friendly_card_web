@@ -54,7 +54,7 @@ class DrawerAdmin extends StatelessWidget {
                   ),
                   child: ListTile(
                     leading: Image.asset(
-                      'images/personal_info_icon.png',
+                      'images/teacher_icon.png',
                       width: 64,
                     ),
                     title: Text(
