@@ -1,9 +1,11 @@
-// ignore_for_file: prefer_const_constructors, sort_child_properties_last, invalid_use_of_protected_member, sized_box_for_whitespace, deprecated_member_use, unrelated_type_equality_checks, avoid_unnecessary_containers
+// ignore_for_file: prefer_const_constructors, sort_child_properties_last, invalid_use_of_protected_member, sized_box_for_whitespace, deprecated_member_use, unrelated_type_equality_checks, avoid_unnecessary_containers, unused_import
 
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:convert_vietnamese/convert_vietnamese.dart';
+import 'package:flexible_grid_view/flexible_grid_view.dart';
 import 'package:flutter/material.dart';
 import 'package:friendly_card_web/components/custom_button.dart';
 import 'package:friendly_card_web/components/custom_search_field.dart';
@@ -12,6 +14,7 @@ import 'package:friendly_card_web/controllers/teacher_controller.dart';
 import 'package:friendly_card_web/controllers/topic_controller.dart';
 import 'package:friendly_card_web/controllers/users_controller.dart';
 import 'package:friendly_card_web/models/topic.dart';
+import 'package:friendly_card_web/widget/empty_data.dart';
 import 'package:friendly_card_web/widget/loading_page.dart';
 import 'package:friendly_card_web/models/users.dart';
 import 'package:friendly_card_web/utils/app_color.dart';
@@ -27,10 +30,16 @@ class TopicManagmentScreen extends StatelessWidget {
     UsersController usersController = Get.find<UsersController>();
     TopicController topicController = Get.find<TopicController>();
 
+    Rx<TextEditingController> searchController = TextEditingController().obs;
+
+    RxList<Topic> listTopic = <Topic>[].obs;
+
     RxInt currentPage = 0.obs;
+    topicController.loadTopicTeacher();
 
     return Obx(
       () {
+        loadData(listTopic, searchController);
         return usersController.loading.value || topicController.loading.value
             ? const LoadingPage()
             : Scaffold(
@@ -56,7 +65,11 @@ class TopicManagmentScreen extends StatelessWidget {
                             width: Get.width * 0.05,
                             child: IconButton(
                               onPressed: () async {
+                                topicController.loading.value = true;
+                                searchController.value.clear();
                                 await topicController.loadTopicTeacher();
+                                loadData(listTopic, searchController);
+                                topicController.loading.value = false;
                               },
                               icon: Icon(
                                 Icons.refresh,
@@ -85,7 +98,21 @@ class TopicManagmentScreen extends StatelessWidget {
                       ),
                     ),
                     Divider(),
-                    Text(topicController.listTopics.value.length.toString()),
+                    topicController.listTopics.value.isEmpty
+                        ? EmptyData()
+                        : Expanded(
+                            child: FlexibleGridView(
+                            axisCount: GridLayoutEnum.threeElementsInRow,
+                            crossAxisSpacing: 8,
+                            mainAxisSpacing: 8,
+                            children: topicController.listTopics.value
+                                .where((item) =>
+                                    item.active == (currentPage.value == 0))
+                                .map(
+                                  (item) => topicItem(context, item),
+                                )
+                                .toList(),
+                          ))
                   ],
                 ),
                 backgroundColor: AppColor.lightBlue,
@@ -109,14 +136,16 @@ class TopicManagmentScreen extends StatelessWidget {
                     color: Colors.white,
                   ),
                   selectedItemColor: Colors.white,
-                  items: const [
+                  items: [
                     BottomNavigationBarItem(
                       icon: Icon(Icons.check_circle),
-                      label: 'Đang hiển thị ()',
+                      label:
+                          'Đang hiển thị (${topicController.listTopics.value.where((item) => item.active).length})',
                     ),
                     BottomNavigationBarItem(
                       icon: Icon(Icons.cancel),
-                      label: 'Đã bị ẩn ()',
+                      label:
+                          'Đã bị ẩn (${topicController.listTopics.value.where((item) => !item.active).length})',
                     ),
                   ],
                   currentIndex: currentPage.value,
@@ -127,6 +156,129 @@ class TopicManagmentScreen extends StatelessWidget {
               );
       },
     );
+  }
+
+  Container topicItem(BuildContext context, Topic item) {
+    return Container(
+      margin: EdgeInsets.symmetric(
+        horizontal: Get.width * 0.03,
+        vertical: Get.height * 0.05,
+      ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.all(
+          Radius.circular(25),
+        ),
+        color: Colors.white,
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: () async {},
+        child: Column(
+          children: [
+            Stack(
+              alignment: Alignment.topRight,
+              children: [
+                Container(
+                  height: Get.height * 0.3,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: NetworkImage((item.image != '')
+                          ? item.image
+                          : 'https://res.cloudinary.com/drir6xyuq/image/upload/v1749203203/logo_icon.png'),
+                      fit: BoxFit.fitHeight,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.only(
+                    top: Get.width * 0.01,
+                    right: Get.width * 0.01,
+                  ),
+                  child: PopupMenuButton<String>(
+                    child: Icon(
+                      Icons.circle,
+                      color: item.active ? AppColor.blue : Colors.grey,
+                    ),
+                    color: AppColor.lightBlue,
+                    itemBuilder: (context) => [
+                      item.active
+                          ? PopupMenuItem(
+                              value: 'lock',
+                              child: ListTile(
+                                leading: Icon(
+                                  Icons.circle,
+                                  color: Colors.grey,
+                                ),
+                                textColor: Colors.grey,
+                                titleTextStyle: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                title: Text('Khóa'),
+                              ),
+                            )
+                          : PopupMenuItem(
+                              value: 'active',
+                              child: ListTile(
+                                leading: Icon(
+                                  Icons.circle,
+                                  color: AppColor.blue,
+                                ),
+                                textColor: AppColor.blue,
+                                titleTextStyle: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                title: Text('Kích hoạt'),
+                              ),
+                            ),
+                    ],
+                    onSelected: (value) async {},
+                  ),
+                ),
+              ],
+            ),
+            Divider(),
+            Container(
+              padding: EdgeInsets.all(Get.height * 0.01),
+              child: Text(
+                item.name.toUpperCase(),
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.all(Get.height * 0.01),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.person),
+                  Text(
+                    ' ${item.name}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void loadData(
+      RxList<Topic> listTopic, Rx<TextEditingController> searchController) {
+    listTopic.value.where((item) => removeDiacritics(item.name.toUpperCase())
+        .contains(removeDiacritics(searchController.value.text.toUpperCase())));
   }
 
   Future<void> createTopic() async {
