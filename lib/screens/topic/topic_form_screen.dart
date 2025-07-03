@@ -5,7 +5,6 @@ import 'package:friendly_card_web/controllers/topic_controller.dart';
 import 'package:friendly_card_web/utils/app_color.dart';
 import 'package:friendly_card_web/widget/loading_page.dart';
 import 'package:get/get.dart';
-import 'package:get/state_manager.dart';
 
 class TopicFormScreen extends StatelessWidget {
   const TopicFormScreen({Key? key}) : super(key: key);
@@ -22,14 +21,12 @@ class TopicFormScreen extends StatelessWidget {
 
     return Obx(() {
       return topicController.loading.value
-          ? LoadingPage()
+          ? const LoadingPage()
           : Scaffold(
               backgroundColor: AppColor.lightBlue,
               appBar: AppBar(
                 centerTitle: true,
-                title: Text(topicController.topic.value.id == ''
-                    ? 'Thêm chủ đề'
-                    : 'Cập nhật chủ đề'),
+                title: Text(topicController.topic.value.name),
                 backgroundColor: AppColor.blue,
                 foregroundColor: Colors.white,
                 titleTextStyle: const TextStyle(
@@ -38,55 +35,169 @@ class TopicFormScreen extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              body: Center(
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: Get.width * 0.05,
-                    vertical: Get.height * 0.05,
-                  ),
-                  margin: EdgeInsets.symmetric(
-                    vertical: Get.height * 0.05,
-                  ),
-                  width: Get.width * 0.65,
-                  // height: Get.height * 0.8,
-                  decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(25),
-                    ),
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 10,
-                        offset: Offset(0, 4),
+              body: Container(
+                margin: EdgeInsets.symmetric(
+                  horizontal: Get.width * 0.025,
+                  vertical: Get.height * 0.05,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      width: Get.width * 0.25,
+                      height: Get.height * 0.5,
+                      decoration: const BoxDecoration(
+                        color: Colors.amber,
                       ),
-                    ],
-                  ),
-                  alignment: Alignment.center,
-                  child: Form(
-                    key: formKey,
-                    child: ListView(
-                      children: [
-                        CustomTextField(
-                          label: 'Tên chủ đề',
-                          controller: nameController,
-                          required: true,
-                        ),
-                        CustomTextField(
-                          label: 'Trạng thái',
-                          controller: TextEditingController(
-                              text: topicController.topic.value.active
-                                  ? "Đang hiển thị"
-                                  : "Đã bị ẩn"),
-                          readOnly: true,
-                        ),
-                        CustomButton(
-                          title: 'title',
-                          onClicked: () async {},
-                        ),
-                      ],
                     ),
-                  ),
+                    Container(
+                      width: Get.width * 0.65,
+                      decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(25),
+                        ),
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: Form(
+                        key: formKey,
+                        child: ListView(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: Get.width * 0.05,
+                            vertical: Get.height * 0.05,
+                          ),
+                          children: [
+                            CustomTextField(
+                              label: 'Tên chủ đề',
+                              controller: nameController,
+                              required: true,
+                            ),
+                            CustomTextField(
+                              label: 'Trạng thái',
+                              controller: TextEditingController(
+                                  text: topicController.topic.value.active
+                                      ? "Đang hiển thị"
+                                      : "Đã bị ẩn"),
+                              readOnly: true,
+                            ),
+                            CustomButton(
+                              title: 'title',
+                              onClicked: () async {},
+                            ),
+                            CustomTextField(
+                              label: 'Tên chủ đề',
+                              controller: nameController,
+                              required: true,
+                            ),
+                            CustomTextField(
+                              label: 'Trạng thái',
+                              controller: TextEditingController(
+                                  text: topicController.topic.value.active
+                                      ? "Đang hiển thị"
+                                      : "Đã bị ẩn"),
+                              readOnly: true,
+                            ),
+                            CustomButton(
+                              title: 'title',
+                              onClicked: () async {},
+                            ),
+                            CustomTextField(
+                              label: 'Tên chủ đề',
+                              controller: nameController,
+                              required: true,
+                            ),
+                            CustomTextField(
+                              label: 'Trạng thái',
+                              controller: TextEditingController(
+                                  text: topicController.topic.value.active
+                                      ? "Đang hiển thị"
+                                      : "Đã bị ẩn"),
+                              readOnly: true,
+                            ),
+                            CustomButton(
+                              title: 'title',
+                              onClicked: () async {},
+                            ),
+                            CustomTextField(
+                              label: 'Tên chủ đề',
+                              controller: nameController,
+                              required: true,
+                            ),
+                            CustomTextField(
+                              label: 'Trạng thái',
+                              controller: TextEditingController(
+                                  text: topicController.topic.value.active
+                                      ? "Đang hiển thị"
+                                      : "Đã bị ẩn"),
+                              readOnly: true,
+                            ),
+                            CustomButton(
+                              title: 'title',
+                              onClicked: () async {},
+                            ),
+                            CustomTextField(
+                              label: 'Tên chủ đề',
+                              controller: nameController,
+                              required: true,
+                            ),
+                            CustomTextField(
+                              label: 'Trạng thái',
+                              controller: TextEditingController(
+                                  text: topicController.topic.value.active
+                                      ? "Đang hiển thị"
+                                      : "Đã bị ẩn"),
+                              readOnly: true,
+                            ),
+                            CustomButton(
+                              title: 'title',
+                              onClicked: () async {},
+                            ),
+                            CustomTextField(
+                              label: 'Tên chủ đề',
+                              controller: nameController,
+                              required: true,
+                            ),
+                            CustomTextField(
+                              label: 'Trạng thái',
+                              controller: TextEditingController(
+                                  text: topicController.topic.value.active
+                                      ? "Đang hiển thị"
+                                      : "Đã bị ẩn"),
+                              readOnly: true,
+                            ),
+                            CustomButton(
+                              title: 'title',
+                              onClicked: () async {},
+                            ),
+                            CustomTextField(
+                              label: 'Tên chủ đề',
+                              controller: nameController,
+                              required: true,
+                            ),
+                            CustomTextField(
+                              label: 'Trạng thái',
+                              controller: TextEditingController(
+                                  text: topicController.topic.value.active
+                                      ? "Đang hiển thị"
+                                      : "Đã bị ẩn"),
+                              readOnly: true,
+                            ),
+                            CustomButton(
+                              title: 'title',
+                              onClicked: () async {},
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );

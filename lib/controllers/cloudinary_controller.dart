@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloudinary/cloudinary.dart';
 import 'package:friendly_card_web/config.dart';
 
@@ -7,7 +9,7 @@ class CloudinaryController {
     apiSecret: Config.apiSecret,
     cloudName: Config.cloudName,
   );
-  Future<String?> uploadImage(
+  Future<String?> uploadImageFile(
       filePath, String fileName, String folderName) async {
     if (filePath != '') {
       final response = await cloudinary.upload(
@@ -23,6 +25,25 @@ class CloudinaryController {
       }
     }
     return 'https://res.cloudinary.com/dg3p7nxyp/image/upload/v1723004576/app/logo_circle.png';
+  }
+
+  Future<String> uploadImage(
+      base64Image, String fileName, String folderName) async {
+    if (base64Image != '') {
+      final response = await cloudinary.upload(
+        file: 'data:image/png;base64,$base64Image',
+        fileBytes: base64Decode(base64Image),
+        folder: folderName,
+        fileName: fileName,
+        progressCallback: (count, total) {},
+      );
+      if (response.isSuccessful) {
+        return response.secureUrl ?? '';
+      } else {
+        return 'https://res.cloudinary.com/drir6xyuq/image/upload/v1749203203/logo_icon.png';
+      }
+    }
+    return 'https://res.cloudinary.com/drir6xyuq/image/upload/v1749203203/logo_icon.png';
   }
 
   Future<void> deleteImage(String id, String folder) async {

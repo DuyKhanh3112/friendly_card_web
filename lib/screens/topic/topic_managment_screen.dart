@@ -1,5 +1,6 @@
-// ignore_for_file: prefer_const_constructors, sort_child_properties_last, invalid_use_of_protected_member, sized_box_for_whitespace, deprecated_member_use, unrelated_type_equality_checks, avoid_unnecessary_containers, unused_import
+// ignore_for_file: prefer_const_constructors, sort_child_properties_last, invalid_use_of_protected_member, sized_box_for_whitespace, deprecated_member_use, unrelated_type_equality_checks, avoid_unnecessary_containers, unused_import, avoid_print
 
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -10,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:friendly_card_web/components/custom_button.dart';
 import 'package:friendly_card_web/components/custom_search_field.dart';
 import 'package:friendly_card_web/components/custom_text_field.dart';
+import 'package:friendly_card_web/controllers/main_controller.dart';
 import 'package:friendly_card_web/controllers/teacher_controller.dart';
 import 'package:friendly_card_web/controllers/topic_controller.dart';
 import 'package:friendly_card_web/controllers/users_controller.dart';
@@ -24,6 +26,14 @@ import 'package:image_picker_web/image_picker_web.dart';
 
 class TopicManagmentScreen extends StatelessWidget {
   const TopicManagmentScreen({super.key});
+  void loadData(
+      RxList<Topic> listTopic, Rx<TextEditingController> searchController) {
+    TopicController topicController = Get.find<TopicController>();
+    listTopic.value = topicController.listTopics.value
+        .where((item) => removeDiacritics(item.name.toUpperCase()).contains(
+            removeDiacritics(searchController.value.text.toUpperCase())))
+        .toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +45,9 @@ class TopicManagmentScreen extends StatelessWidget {
     RxList<Topic> listTopic = <Topic>[].obs;
 
     RxInt currentPage = 0.obs;
-    topicController.loadTopicTeacher();
+    if (usersController.user.value.role == 'teacher') {
+      topicController.loadTopicTeacher();
+    }
 
     return Obx(
       () {
@@ -55,10 +67,11 @@ class TopicManagmentScreen extends StatelessWidget {
                           Container(
                             width: Get.width * 0.6,
                             child: CustomSearchFiled(
-                              hint:
-                                  'Tìm kiếm giáo viên chuyên môn theo Tên đăng nhập, Họ tên, Email, Số điện thoại.',
-                              onChanged: (String value) {},
-                              controller: TextEditingController(),
+                              hint: 'Tìm kiếm chủ đề theo Tên chủ đề.',
+                              onChanged: (String value) {
+                                loadData(listTopic, searchController);
+                              },
+                              controller: searchController.value,
                             ),
                           ),
                           Container(
@@ -82,30 +95,36 @@ class TopicManagmentScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                          Container(
-                            width: Get.width * 0.2,
-                            decoration: BoxDecoration(),
-                            child: CustomButton(
-                              title: 'Thêm chủ đề',
-                              bgColor: AppColor.blue,
-                              onClicked: () async {
-                                topicController.topic.value = Topic.initTopic();
-                                await createTopic();
-                              },
-                            ),
-                          ),
+                          usersController.user.value.role == 'teacher'
+                              ? Container(
+                                  width: Get.width * 0.2,
+                                  decoration: BoxDecoration(),
+                                  child: CustomButton(
+                                    title: 'Thêm chủ đề',
+                                    bgColor: AppColor.blue,
+                                    onClicked: () async {
+                                      topicController.topic.value =
+                                          Topic.initTopic();
+                                      await formTopic();
+                                    },
+                                  ),
+                                )
+                              : SizedBox()
                         ],
                       ),
                     ),
                     Divider(),
-                    topicController.listTopics.value.isEmpty
+                    listTopic.value
+                            .where((item) =>
+                                item.active == (currentPage.value == 0))
+                            .isEmpty
                         ? EmptyData()
                         : Expanded(
                             child: FlexibleGridView(
                             axisCount: GridLayoutEnum.threeElementsInRow,
                             crossAxisSpacing: 8,
                             mainAxisSpacing: 8,
-                            children: topicController.listTopics.value
+                            children: listTopic.value
                                 .where((item) =>
                                     item.active == (currentPage.value == 0))
                                 .map(
@@ -140,12 +159,12 @@ class TopicManagmentScreen extends StatelessWidget {
                     BottomNavigationBarItem(
                       icon: Icon(Icons.check_circle),
                       label:
-                          'Đang hiển thị (${topicController.listTopics.value.where((item) => item.active).length})',
+                          'Đang hiển thị (${listTopic.value.where((item) => item.active).length})',
                     ),
                     BottomNavigationBarItem(
                       icon: Icon(Icons.cancel),
                       label:
-                          'Đã bị ẩn (${topicController.listTopics.value.where((item) => !item.active).length})',
+                          'Đã bị ẩn (${listTopic.value.where((item) => !item.active).length})',
                     ),
                   ],
                   currentIndex: currentPage.value,
@@ -159,6 +178,17 @@ class TopicManagmentScreen extends StatelessWidget {
   }
 
   Container topicItem(BuildContext context, Topic item) {
+    UsersController usersController = Get.find<UsersController>();
+    TeacherController teacherController = Get.find<TeacherController>();
+    TopicController topicController = Get.find<TopicController>();
+    Users teacher = Users.initTeacher();
+    if (usersController.user.value.role == 'teacher') {
+      teacher = usersController.user.value;
+    } else {
+      teacher = teacherController.listTeachers.value
+              .firstWhereOrNull((t) => t.id == item.user_id) ??
+          Users.initTeacher();
+    }
     return Container(
       margin: EdgeInsets.symmetric(
         horizontal: Get.width * 0.03,
@@ -178,7 +208,10 @@ class TopicManagmentScreen extends StatelessWidget {
         ],
       ),
       child: InkWell(
-        onTap: () async {},
+        onTap: () async {
+          topicController.topic.value = item;
+          await formTopic();
+        },
         child: Column(
           children: [
             Stack(
@@ -206,38 +239,43 @@ class TopicManagmentScreen extends StatelessWidget {
                       color: item.active ? AppColor.blue : Colors.grey,
                     ),
                     color: AppColor.lightBlue,
-                    itemBuilder: (context) => [
-                      item.active
-                          ? PopupMenuItem(
-                              value: 'lock',
-                              child: ListTile(
-                                leading: Icon(
-                                  Icons.circle,
-                                  color: Colors.grey,
-                                ),
-                                textColor: Colors.grey,
-                                titleTextStyle: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                title: Text('Khóa'),
-                              ),
-                            )
-                          : PopupMenuItem(
-                              value: 'active',
-                              child: ListTile(
-                                leading: Icon(
-                                  Icons.circle,
-                                  color: AppColor.blue,
-                                ),
-                                textColor: AppColor.blue,
-                                titleTextStyle: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                title: Text('Kích hoạt'),
-                              ),
-                            ),
-                    ],
-                    onSelected: (value) async {},
+                    itemBuilder: (context) =>
+                        usersController.user.value.role == 'teacher'
+                            ? []
+                            : [
+                                item.active
+                                    ? PopupMenuItem(
+                                        value: 'lock',
+                                        child: ListTile(
+                                          leading: Icon(
+                                            Icons.circle,
+                                            color: Colors.grey,
+                                          ),
+                                          textColor: Colors.grey,
+                                          titleTextStyle: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          title: Text('Khóa'),
+                                        ),
+                                      )
+                                    : PopupMenuItem(
+                                        value: 'active',
+                                        child: ListTile(
+                                          leading: Icon(
+                                            Icons.circle,
+                                            color: AppColor.blue,
+                                          ),
+                                          textColor: AppColor.blue,
+                                          titleTextStyle: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          title: Text('Kích hoạt'),
+                                        ),
+                                      ),
+                              ],
+                    onSelected: (value) async {
+                      await topicController.updateTopicStatus(item);
+                    },
                   ),
                 ),
               ],
@@ -260,7 +298,7 @@ class TopicManagmentScreen extends StatelessWidget {
                 children: [
                   Icon(Icons.person),
                   Text(
-                    ' ${item.name}',
+                    ' ${teacher.fullname}',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -275,477 +313,229 @@ class TopicManagmentScreen extends StatelessWidget {
     );
   }
 
-  void loadData(
-      RxList<Topic> listTopic, Rx<TextEditingController> searchController) {
-    listTopic.value.where((item) => removeDiacritics(item.name.toUpperCase())
-        .contains(removeDiacritics(searchController.value.text.toUpperCase())));
-  }
-
-  Future<void> createTopic() async {
+  Future<void> formTopic() async {
     TopicController topicController = Get.find<TopicController>();
     UsersController usersController = Get.find<UsersController>();
     TextEditingController nameController =
         TextEditingController(text: topicController.topic.value.name);
     final formKey = GlobalKey<FormState>();
 
-    Rx<ImageProvider?> imgProvider = Rx<ImageProvider?>(null);
+    RxString imgBase64 = ''.obs;
+    RxString imgUrl = topicController.topic.value.image.obs;
 
     await Get.dialog(
-      AlertDialog(
-        backgroundColor: AppColor.lightBlue,
-        titlePadding: EdgeInsets.symmetric(
-          horizontal: Get.width * 0.025,
-          vertical: Get.width * 0.01,
-        ),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: Get.width * 0.025,
-          // vertical: Get.width * 0.01,
-        ),
-        buttonPadding: EdgeInsets.symmetric(
-          horizontal: Get.width * 0.025,
-          vertical: Get.width * 0.01,
-        ),
-        actionsPadding: EdgeInsets.symmetric(
-          horizontal: Get.width * 0.025,
-          vertical: Get.width * 0.01,
-        ),
-        title: Column(
-          children: [
-            Text(
-              'Thêm chủ đề',
-              style: TextStyle(
-                fontSize: 28,
-                color: AppColor.blue,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Divider(
-              color: AppColor.blue,
-            )
-          ],
-        ),
-        content: Container(
-          width: Get.width * 0.5,
-          height: Get.height * 0.3,
-          child: Form(
-            key: formKey,
-            child: ListView(
-              children: [
-                CustomTextField(
-                  label: 'Tên chủ đề',
-                  controller: nameController,
-                  required: true,
+      Obx(
+        () => AlertDialog(
+          backgroundColor: AppColor.lightBlue,
+          titlePadding: EdgeInsets.symmetric(
+            horizontal: Get.width * 0.025,
+            vertical: Get.width * 0.01,
+          ),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: Get.width * 0.025,
+            // vertical: Get.width * 0.01,
+          ),
+          buttonPadding: EdgeInsets.symmetric(
+            horizontal: Get.width * 0.025,
+            vertical: Get.width * 0.01,
+          ),
+          actionsPadding: EdgeInsets.symmetric(
+            horizontal: Get.width * 0.025,
+            vertical: Get.width * 0.01,
+          ),
+          title: Column(
+            children: [
+              Text(
+                'Thông tin chủ đề',
+                style: TextStyle(
+                  fontSize: 28,
+                  color: AppColor.blue,
+                  fontWeight: FontWeight.bold,
                 ),
-                InkWell(
-                  onTap: () async {
-                    // print(imgProvide)
-                    // Image? fromPicker = await ImagePickerWeb.getImageAsWidget();
-                    // if (fromPicker != null) {
-                    //   imgProvider.value = fromPicker.image;
-                    // }
-                    MediaInfo? result = await ImagePickerWeb.getImageInfo();
-                    if (result != null) {
-                      print(result);
-                    }
-                    print(imgProvider);
-                  },
-                  child: Container(
-                    // width: Get.height * 0.3,
-                    height: Get.height * 0.2,
-                    padding: EdgeInsets.all(12),
-                    margin: EdgeInsets.symmetric(
-                      // vertical: Get.height * 0.2,
-                      horizontal: Get.width * 0.2,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(),
-                      // image: imgProvider.value == null
-                      //     ? DecorationImage(
-                      //         image: imgProvider.value!,
-                      //         fit: BoxFit.cover,
-                      //       )
-                      //     : DecorationImage(
-                      //         image: imgProvider.value!,
-                      //         fit: BoxFit.cover,
-                      //       ),
-                      color: Colors.white,
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 10,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      'Nhấn vào đây để thay đổi ảnh chủ đề.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontStyle: FontStyle.italic,
+              ),
+              Divider(
+                color: AppColor.blue,
+              ),
+            ],
+          ),
+          content: Container(
+            width: Get.width * 0.5,
+            height: Get.height * 0.3,
+            child: Form(
+              key: formKey,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Container(
+                      // padding: const EdgeInsets.all(8.0),
+                      child: CustomTextField(
+                        label: 'Tên chủ đề',
+                        controller: nameController,
+                        required: true,
+                        readOnly: usersController.user.value.role != 'teacher',
                       ),
                     ),
                   ),
-
-                  // child: Obx(
-                  //   () => Container(
-                  //     // width: Get.height * 0.3,
-                  //     height: Get.height * 0.2,
-                  //     padding: EdgeInsets.all(12),
-                  //     margin: EdgeInsets.symmetric(
-                  //       // vertical: Get.height * 0.2,
-                  //       horizontal: Get.width * 0.2,
-                  //     ),
-                  //     decoration: BoxDecoration(
-                  //       border: Border.all(),
-                  //       // image: imgProvider.value == null
-                  //       //     ? DecorationImage(
-                  //       //         image: imgProvider.value!,
-                  //       //         fit: BoxFit.cover,
-                  //       //       )
-                  //       //     : DecorationImage(
-                  //       //         image: imgProvider.value!,
-                  //       //         fit: BoxFit.cover,
-                  //       //       ),
-                  //       color: Colors.white,
-                  //       boxShadow: const [
-                  //         BoxShadow(
-                  //           color: Colors.black26,
-                  //           blurRadius: 10,
-                  //           offset: Offset(0, 4),
-                  //         ),
-                  //       ],
-                  //     ),
-                  //     alignment: Alignment.center,
-                  //     child: Text(
-                  //       'Nhấn vào đây để thay đổi ảnh chủ đề.',
-                  //       textAlign: TextAlign.center,
-                  //       style: TextStyle(
-                  //         fontSize: 14,
-                  //         fontStyle: FontStyle.italic,
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
-                ),
-                Text(
-                  '( Nhấn vào đây để thay đổi ảnh chủ đề )',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontStyle: FontStyle.italic,
+                  Column(
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: InkWell(
+                          onTap: usersController.user.value.role != 'teacher'
+                              ? null
+                              : () async {
+                                  var result =
+                                      await ImagePickerWeb.getImageAsBytes();
+                                  if (result != null) {
+                                    imgBase64.value = base64Encode(result);
+                                  }
+                                },
+                          child: Container(
+                            height: Get.height * 0.25,
+                            width: Get.height * 0.25,
+                            padding: EdgeInsets.all(12),
+                            margin: EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              // border: Border.all(),
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(32),
+                              ),
+                              image: topicController.topic.value.id == ''
+                                  ? imgBase64.value == ''
+                                      ? null
+                                      : DecorationImage(
+                                          image: MemoryImage(
+                                              base64Decode(imgBase64.value)),
+                                          fit: BoxFit.cover,
+                                        )
+                                  : imgBase64.value == ''
+                                      ? imgUrl.value == ''
+                                          ? null
+                                          : DecorationImage(
+                                              image: NetworkImage(imgUrl.value),
+                                              fit: BoxFit.cover,
+                                            )
+                                      : DecorationImage(
+                                          image: MemoryImage(
+                                              base64Decode(imgBase64.value)),
+                                          fit: BoxFit.cover,
+                                        ),
+                              color: Colors.white,
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 10,
+                                  offset: Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            alignment: Alignment.center,
+                          ),
+                        ),
+                      ),
+                      usersController.user.value.role == 'teacher'
+                          ? Text(
+                              'Nhấn vào đây để thay đổi ảnh chủ đề.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontStyle: FontStyle.italic,
+                                color: AppColor.labelBlue,
+                              ),
+                            )
+                          : SizedBox(),
+                    ],
                   ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            Column(
+              children: [
+                Divider(
+                  color: AppColor.blue,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(Colors.red),
+                        foregroundColor: WidgetStatePropertyAll(Colors.white),
+                      ),
+                      onPressed: () {
+                        Get.back();
+                      },
+                      child: Text('Hủy'),
+                    ),
+                    usersController.user.value.role == 'teacher'
+                        ? Row(
+                            children: [
+                              SizedBox(
+                                width: 64,
+                              ),
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                  backgroundColor:
+                                      WidgetStatePropertyAll(AppColor.blue),
+                                  foregroundColor:
+                                      WidgetStatePropertyAll(Colors.white),
+                                ),
+                                onPressed: () async {
+                                  if (formKey.currentState!.validate()) {
+                                    topicController.topic.value.name =
+                                        nameController.text;
+                                    topicController.topic.value.user_id =
+                                        usersController.user.value.id;
+                                    topicController.topic.value.update_at =
+                                        Timestamp.now();
+                                    topicController.topic.value.active = false;
+                                    Get.back();
+                                    if (topicController.topic.value.id == '') {
+                                      await topicController
+                                          .createTopic(imgBase64.value);
+                                    } else {
+                                      await topicController
+                                          .updateTopic(imgBase64.value);
+                                    }
+                                  }
+                                },
+                                child: Text('Xác nhận'),
+                              ),
+                            ],
+                          )
+                        : SizedBox(),
+                    topicController.topic.value.id != ''
+                        ? Row(
+                            children: [
+                              SizedBox(
+                                width: 64,
+                              ),
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                  backgroundColor:
+                                      WidgetStatePropertyAll(AppColor.blue),
+                                  foregroundColor:
+                                      WidgetStatePropertyAll(Colors.white),
+                                ),
+                                onPressed: () async {
+                                  Get.toNamed('/topic_form');
+                                },
+                                child: Text('Xem chi tiết'),
+                              ),
+                            ],
+                          )
+                        : SizedBox(),
+                  ],
                 ),
               ],
-            ),
-          ),
+            )
+          ],
         ),
-        actions: [
-          ElevatedButton(
-            style: ButtonStyle(
-              backgroundColor: WidgetStatePropertyAll(Colors.red),
-              foregroundColor: WidgetStatePropertyAll(Colors.white),
-            ),
-            onPressed: () {
-              Get.back();
-            },
-            child: Text('Hủy'),
-          ),
-          ElevatedButton(
-            style: ButtonStyle(
-              backgroundColor: WidgetStatePropertyAll(AppColor.blue),
-              foregroundColor: WidgetStatePropertyAll(Colors.white),
-            ),
-            onPressed: () async {
-              if (formKey.currentState!.validate()) {
-                topicController.topic.value.name = nameController.text;
-                topicController.topic.value.user_id =
-                    usersController.user.value.id;
-                topicController.topic.value.update_at = Timestamp.now();
-                topicController.topic.value.active = false;
-                Get.back();
-                await topicController.createTopic();
-              }
-            },
-            child: Text('Xác nhận'),
-          ),
-        ],
       ),
     );
   }
-
-  // Widget itemTeacher(BuildContext context, Users item) {
-  //   TeacherController teacherController = Get.find<TeacherController>();
-  //   return Container(
-  //     margin: EdgeInsets.symmetric(
-  //       horizontal: Get.width * 0.03,
-  //       vertical: Get.height * 0.05,
-  //     ),
-  //     decoration: BoxDecoration(
-  //       borderRadius: BorderRadius.all(
-  //         Radius.circular(25),
-  //       ),
-  //       color: Colors.white,
-  //       boxShadow: const [
-  //         BoxShadow(
-  //           color: Colors.black26,
-  //           blurRadius: 10,
-  //           offset: Offset(0, 4),
-  //         ),
-  //       ],
-  //     ),
-  //     child: InkWell(
-  //       onTap: () {
-  //         teacherController.teacher.value = item;
-  //         Get.toNamed('/teacher_form');
-  //       },
-  //       child: Column(
-  //         children: [
-  //           Stack(
-  //             alignment: Alignment.topRight,
-  //             children: [
-  //               Container(
-  //                 height: Get.height * 0.3,
-  //                 decoration: BoxDecoration(
-  //                   image: DecorationImage(
-  //                     image: NetworkImage((item.avatar != null &&
-  //                             item.avatar != '')
-  //                         ? item.avatar!
-  //                         : 'https://res.cloudinary.com/drir6xyuq/image/upload/v1749203203/logo_icon.png'),
-  //                     fit: BoxFit.fitHeight,
-  //                   ),
-  //                 ),
-  //               ),
-  //               Container(
-  //                 padding: EdgeInsets.only(
-  //                   top: Get.width * 0.01,
-  //                   right: Get.width * 0.01,
-  //                 ),
-  //                 child: PopupMenuButton<String>(
-  //                   child: Icon(
-  //                     Icons.circle,
-  //                     color: item.active ? AppColor.blue : Colors.grey,
-  //                   ),
-  //                   onSelected: (value) async {
-  //                     if (value == 'active') {
-  //                       Users teacher = teacherController.listTeachers.value
-  //                               .firstWhereOrNull((t) => t.id == item.id) ??
-  //                           Users.initUser();
-  //                       teacher.active = true;
-  //                       teacher.reason_lock = '';
-  //                       await teacherController.updateTeacher(teacher);
-  //                     } else {
-  //                       TextEditingController reasonLockController =
-  //                           TextEditingController();
-  //                       final formKey = GlobalKey<FormState>();
-  //                       await Get.dialog(
-  //                         AlertDialog(
-  //                           backgroundColor: AppColor.lightBlue,
-  //                           titlePadding: EdgeInsets.symmetric(
-  //                             horizontal: Get.width * 0.025,
-  //                             vertical: Get.width * 0.01,
-  //                           ),
-  //                           contentPadding: EdgeInsets.symmetric(
-  //                             horizontal: Get.width * 0.025,
-  //                             // vertical: Get.width * 0.01,
-  //                           ),
-  //                           buttonPadding: EdgeInsets.symmetric(
-  //                             horizontal: Get.width * 0.025,
-  //                             vertical: Get.width * 0.01,
-  //                           ),
-  //                           actionsPadding: EdgeInsets.symmetric(
-  //                             horizontal: Get.width * 0.025,
-  //                             vertical: Get.width * 0.01,
-  //                           ),
-  //                           title: Container(
-  //                               // padding: EdgeInsets.symmetric(
-  //                               //   horizontal: Get.width * 0.01,
-  //                               // ),
-  //                               child: Column(
-  //                             children: [
-  //                               Text(
-  //                                 'Lý do khóa tài khoản',
-  //                                 style: TextStyle(
-  //                                   color: AppColor.blue,
-  //                                 ),
-  //                               ),
-  //                               const Divider(),
-  //                             ],
-  //                           )),
-  //                           content: Form(
-  //                             key: formKey,
-  //                             child: TextFormField(
-  //                               controller: reasonLockController,
-  //                               style: TextStyle(
-  //                                 fontSize: 16,
-  //                                 color: AppColor.blue,
-  //                                 // fontWeight: FontWeight.bold,
-  //                               ),
-  //                               validator: (value) {
-  //                                 if (value == null ||
-  //                                     value.isEmpty ||
-  //                                     value.trim() == '') {
-  //                                   return 'Vui lòng nhập lý do khóa tài khoản.';
-  //                                 }
-  //                                 return null;
-  //                               },
-  //                               decoration: InputDecoration(
-  //                                 hintText: 'Nhập lý do khóa tài khoản',
-  //                                 hintStyle: TextStyle(
-  //                                   fontSize: 16,
-  //                                   fontWeight: FontWeight.bold,
-  //                                   color: AppColor.labelBlue,
-  //                                 ),
-  //                                 border: OutlineInputBorder(
-  //                                   borderRadius: BorderRadius.all(
-  //                                     Radius.circular(25),
-  //                                   ),
-  //                                 ),
-  //                                 errorMaxLines: 2,
-  //                               ),
-  //                             ),
-  //                           ),
-  //                           actions: [
-  //                             ElevatedButton(
-  //                               style: ButtonStyle(
-  //                                 backgroundColor:
-  //                                     WidgetStatePropertyAll(Colors.red),
-  //                                 foregroundColor:
-  //                                     WidgetStatePropertyAll(Colors.white),
-  //                               ),
-  //                               onPressed: () {
-  //                                 Get.back();
-  //                               },
-  //                               child: Text('Hủy'),
-  //                             ),
-  //                             ElevatedButton(
-  //                               style: ButtonStyle(
-  //                                 backgroundColor:
-  //                                     WidgetStatePropertyAll(AppColor.blue),
-  //                                 foregroundColor:
-  //                                     WidgetStatePropertyAll(Colors.white),
-  //                               ),
-  //                               onPressed: () async {
-  //                                 if (formKey.currentState!.validate()) {
-  //                                   Users teacher = teacherController
-  //                                           .listTeachers.value
-  //                                           .firstWhereOrNull(
-  //                                               (t) => t.id == item.id) ??
-  //                                       Users.initUser();
-  //                                   teacher.active = false;
-  //                                   teacher.reason_lock =
-  //                                       reasonLockController.text;
-  //                                   Get.back();
-  //                                   await teacherController
-  //                                       .updateTeacher(teacher);
-  //                                 }
-  //                               },
-  //                               child: Text('Xác nhận'),
-  //                             ),
-  //                           ],
-  //                         ),
-  //                       );
-  //                     }
-  //                   },
-  //                   color: AppColor.lightBlue,
-  //                   itemBuilder: (context) => [
-  //                     item.active
-  //                         ? PopupMenuItem(
-  //                             value: 'lock',
-  //                             child: ListTile(
-  //                               leading: Icon(
-  //                                 Icons.circle,
-  //                                 color: Colors.grey,
-  //                               ),
-  //                               textColor: Colors.grey,
-  //                               titleTextStyle: TextStyle(
-  //                                 fontWeight: FontWeight.bold,
-  //                               ),
-  //                               title: Text('Khóa'),
-  //                             ),
-  //                           )
-  //                         : PopupMenuItem(
-  //                             value: 'active',
-  //                             child: ListTile(
-  //                               leading: Icon(
-  //                                 Icons.circle,
-  //                                 color: AppColor.blue,
-  //                               ),
-  //                               textColor: AppColor.blue,
-  //                               titleTextStyle: TextStyle(
-  //                                 fontWeight: FontWeight.bold,
-  //                               ),
-  //                               title: Text('Kích hoạt'),
-  //                             ),
-  //                           ),
-  //                   ],
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //           Divider(),
-  //           Container(
-  //             padding: EdgeInsets.all(Get.height * 0.01),
-  //             child: Text(
-  //               item.fullname.toUpperCase(),
-  //               style: const TextStyle(
-  //                 fontSize: 28,
-  //                 fontWeight: FontWeight.bold,
-  //               ),
-  //             ),
-  //           ),
-  //           Container(
-  //             padding: EdgeInsets.all(Get.height * 0.01),
-  //             child: Row(
-  //               mainAxisAlignment: MainAxisAlignment.center,
-  //               children: [
-  //                 Icon(Icons.person),
-  //                 Text(
-  //                   ' ${item.username}',
-  //                   style: const TextStyle(
-  //                     fontSize: 18,
-  //                     fontWeight: FontWeight.bold,
-  //                   ),
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //           Container(
-  //             padding: EdgeInsets.all(Get.height * 0.01),
-  //             child: Row(
-  //               mainAxisAlignment: MainAxisAlignment.center,
-  //               children: [
-  //                 Icon(Icons.phone),
-  //                 Text(
-  //                   ' ${item.phone ?? ''}',
-  //                   style: const TextStyle(
-  //                     fontSize: 18,
-  //                     fontWeight: FontWeight.bold,
-  //                   ),
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //           Container(
-  //             padding: EdgeInsets.all(Get.height * 0.01),
-  //             child: Row(
-  //               mainAxisAlignment: MainAxisAlignment.center,
-  //               children: [
-  //                 Icon(Icons.email),
-  //                 Text(
-  //                   ' ${item.email ?? ''}',
-  //                   style: const TextStyle(
-  //                     fontSize: 18,
-  //                     fontWeight: FontWeight.bold,
-  //                   ),
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
 }

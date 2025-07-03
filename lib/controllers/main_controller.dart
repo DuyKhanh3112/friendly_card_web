@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:friendly_card_web/controllers/teacher_controller.dart';
+import 'package:friendly_card_web/controllers/topic_controller.dart';
 import 'package:friendly_card_web/screens/topic/topic_managment_screen.dart';
 import 'package:friendly_card_web/screens/user/user_information_screen.dart';
 import 'package:friendly_card_web/screens/teacher/teacher_managment_screen.dart';
 import 'package:get/get.dart';
 
 class MainController extends GetxController {
-  RxInt numPageAdmin = 0.obs;
+  RxInt numPageAdmin = 2.obs;
   RxInt numPageTeacher = 1.obs;
 
   List<String> titleAdmin = [
@@ -22,7 +24,7 @@ class MainController extends GetxController {
   List<Widget> pageAdmin = [
     const UserInformationScreen(),
     const TeacherManagmentScreen(),
-    const TeacherManagmentScreen(),
+    const TopicManagmentScreen(),
     const TeacherManagmentScreen(),
   ];
 
@@ -30,4 +32,9 @@ class MainController extends GetxController {
     const UserInformationScreen(),
     const TopicManagmentScreen(),
   ];
+
+  Future<void> loadAllDataForAdmin() async {
+    await Get.find<TeacherController>().loadAllData();
+    await Get.find<TopicController>().loadAllTopic();
+  }
 }

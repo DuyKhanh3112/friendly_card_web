@@ -1,4 +1,7 @@
+// ignore_for_file: invalid_use_of_protected_member
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:friendly_card_web/controllers/cloudinary_controller.dart';
 import 'package:friendly_card_web/controllers/users_controller.dart';
 import 'package:friendly_card_web/models/topic.dart';
 import 'package:get/get.dart';
@@ -28,16 +31,53 @@ class TopicController extends GetxController {
     loading.value = false;
   }
 
-  Future<void> createTopic() async {
+  Future<void> loadAllTopic() async {
+    listTopics.value = [];
+    loading.value = true;
+
+    var snapshoot = await topicCollection.get();
+    for (var item in snapshoot.docs) {
+      Map<String, dynamic> data = item.data() as Map<String, dynamic>;
+      data['id'] = item.id;
+      listTopics.value.add(Topic.fromJson(data));
+    }
+    loading.value = false;
+  }
+
+  Future<void> createTopic(String imgBase64) async {
     loading.value = true;
     WriteBatch batch = FirebaseFirestore.instance.batch();
     String id = topicCollection.doc().id;
+    String imgUrl =
+        await CloudinaryController().uploadImage(imgBase64, id, 'topic');
+    topic.value.image = imgUrl;
     DocumentReference refTopic = topicCollection.doc(id);
     topic.value.update_at = Timestamp.now();
     batch.set(refTopic, topic.value.toVal());
     await batch.commit();
     await loadTopicTeacher();
     topic.value = Topic.initTopic();
+    loading.value = false;
+  }
+
+  Future<void> updateTopic(String imgBase64) async {
+    loading.value = true;
+    topic.value.update_at = Timestamp.now();
+    if (imgBase64 != '') {
+      String imgUrl = await CloudinaryController()
+          .uploadImage(imgBase64, topic.value.id, 'topic');
+      topic.value.image = imgUrl;
+    }
+    await topicCollection.doc(topic.value.id).update(topic.value.toVal());
+    loading.value = false;
+  }
+
+  Future<void> updateTopicStatus(Topic item) async {
+    loading.value = true;
+    item.update_at = Timestamp.now();
+    item.active = !item.active;
+    await topicCollection.doc(item.id).update(item.toVal());
+    await loadAllTopic();
     loading.value = false;
   }
 }

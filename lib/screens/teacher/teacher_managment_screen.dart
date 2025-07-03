@@ -38,7 +38,9 @@ class TeacherManagmentScreen extends StatelessWidget {
     Rx<TextEditingController> searchController = TextEditingController().obs;
     RxList<Users> listTeachers = <Users>[].obs;
     RxInt currentPage = 0.obs;
-    teacherController.loadAllData();
+    if (usersController.user.value.role == 'teacher') {
+      teacherController.loadAllData();
+    }
 
     return Obx(
       () {

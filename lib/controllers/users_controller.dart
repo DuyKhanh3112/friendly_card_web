@@ -36,17 +36,22 @@ class UsersController extends GetxController {
       user.value = Users.fromJson(data);
 
       role.value = user.value.role;
-      loading.value = false;
+
       if (!user.value.active) {
+        loading.value = false;
         return false;
       }
 
       if (role.value == 'admin') {
+        await MainController().loadAllDataForAdmin();
+        loading.value = false;
         Get.toNamed('/admin');
       }
       if (role.value == 'teacher') {
+        loading.value = false;
         Get.toNamed('/teacher');
       }
+      loading.value = false;
       return true;
     }
     loading.value = false;

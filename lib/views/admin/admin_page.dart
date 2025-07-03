@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:friendly_card_web/controllers/main_controller.dart';
 import 'package:friendly_card_web/controllers/users_controller.dart';
-import 'package:friendly_card_web/views/login_page.dart';
 import 'package:friendly_card_web/widget/loading_page.dart';
 import 'package:friendly_card_web/utils/app_color.dart';
 import 'package:friendly_card_web/views/admin/drawer_admin.dart';
