@@ -13,8 +13,8 @@ import 'package:friendly_card_web/models/users.dart';
 import 'package:friendly_card_web/utils/app_color.dart';
 import 'package:get/get.dart';
 
-class TeacherManagmentScreent extends StatelessWidget {
-  const TeacherManagmentScreent({super.key});
+class TeacherManagmentScreen extends StatelessWidget {
+  const TeacherManagmentScreen({super.key});
 
   void loadData(RxList<Users> listTeachers, RxInt currentPage,
       Rx<TextEditingController> searchController) {
@@ -93,7 +93,7 @@ class TeacherManagmentScreent extends StatelessWidget {
                             width: Get.width * 0.2,
                             decoration: BoxDecoration(),
                             child: CustomButton(
-                              title: 'Thêm Giáo viên',
+                              title: 'Thêm giáo viên',
                               bgColor: AppColor.blue,
                               onClicked: () async {
                                 teacherController.teacher.value =

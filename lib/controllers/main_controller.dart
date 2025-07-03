@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:friendly_card_web/screens/topic/topic_managment_screen.dart';
 import 'package:friendly_card_web/screens/user/user_information_screen.dart';
 import 'package:friendly_card_web/screens/teacher/teacher_managment_screen.dart';
 import 'package:get/get.dart';
 
 class MainController extends GetxController {
   RxInt numPageAdmin = 0.obs;
-  RxInt numPageTeacher = 0.obs;
+  RxInt numPageTeacher = 1.obs;
 
   List<String> titleAdmin = [
     'Thông tin cá nhân',
@@ -20,13 +21,13 @@ class MainController extends GetxController {
 
   List<Widget> pageAdmin = [
     const UserInformationScreen(),
-    const TeacherManagmentScreent(),
-    const TeacherManagmentScreent(),
-    const TeacherManagmentScreent(),
+    const TeacherManagmentScreen(),
+    const TeacherManagmentScreen(),
+    const TeacherManagmentScreen(),
   ];
 
   List<Widget> pageTeacher = [
     const UserInformationScreen(),
-    const UserInformationScreen(),
+    const TopicManagmentScreen(),
   ];
 }

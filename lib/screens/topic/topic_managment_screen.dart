@@ -1,0 +1,599 @@
+// ignore_for_file: prefer_const_constructors, sort_child_properties_last, invalid_use_of_protected_member, sized_box_for_whitespace, deprecated_member_use, unrelated_type_equality_checks, avoid_unnecessary_containers
+
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:friendly_card_web/components/custom_button.dart';
+import 'package:friendly_card_web/components/custom_search_field.dart';
+import 'package:friendly_card_web/components/custom_text_field.dart';
+import 'package:friendly_card_web/controllers/teacher_controller.dart';
+import 'package:friendly_card_web/controllers/topic_controller.dart';
+import 'package:friendly_card_web/controllers/users_controller.dart';
+import 'package:friendly_card_web/models/topic.dart';
+import 'package:friendly_card_web/widget/loading_page.dart';
+import 'package:friendly_card_web/models/users.dart';
+import 'package:friendly_card_web/utils/app_color.dart';
+import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:image_picker_web/image_picker_web.dart';
+
+class TopicManagmentScreen extends StatelessWidget {
+  const TopicManagmentScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    UsersController usersController = Get.find<UsersController>();
+    TopicController topicController = Get.find<TopicController>();
+
+    RxInt currentPage = 0.obs;
+
+    return Obx(
+      () {
+        return usersController.loading.value || topicController.loading.value
+            ? const LoadingPage()
+            : Scaffold(
+                body: Column(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: Get.width * 0.05,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            width: Get.width * 0.6,
+                            child: CustomSearchFiled(
+                              hint:
+                                  'Tìm kiếm giáo viên chuyên môn theo Tên đăng nhập, Họ tên, Email, Số điện thoại.',
+                              onChanged: (String value) {},
+                              controller: TextEditingController(),
+                            ),
+                          ),
+                          Container(
+                            width: Get.width * 0.05,
+                            child: IconButton(
+                              onPressed: () async {
+                                await topicController.loadTopicTeacher();
+                              },
+                              icon: Icon(
+                                Icons.refresh,
+                                color: AppColor.lightBlue,
+                              ),
+                              style: ButtonStyle(
+                                backgroundColor:
+                                    MaterialStateProperty.all<Color>(
+                                        AppColor.blue),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: Get.width * 0.2,
+                            decoration: BoxDecoration(),
+                            child: CustomButton(
+                              title: 'Thêm chủ đề',
+                              bgColor: AppColor.blue,
+                              onClicked: () async {
+                                topicController.topic.value = Topic.initTopic();
+                                await createTopic();
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Divider(),
+                    Text(topicController.listTopics.value.length.toString()),
+                  ],
+                ),
+                backgroundColor: AppColor.lightBlue,
+                bottomNavigationBar: BottomNavigationBar(
+                  elevation: 15,
+                  type: BottomNavigationBarType.fixed,
+                  selectedFontSize: 16,
+                  unselectedFontSize: 13,
+                  selectedIconTheme: const IconThemeData(
+                    size: 32,
+                  ),
+                  unselectedIconTheme: const IconThemeData(
+                    size: 24,
+                  ),
+                  showUnselectedLabels: true,
+                  backgroundColor: AppColor.blue,
+                  unselectedItemColor: AppColor.labelBlue,
+                  unselectedLabelStyle: TextStyle(color: AppColor.labelBlue),
+                  selectedLabelStyle: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                  selectedItemColor: Colors.white,
+                  items: const [
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.check_circle),
+                      label: 'Đang hiển thị ()',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.cancel),
+                      label: 'Đã bị ẩn ()',
+                    ),
+                  ],
+                  currentIndex: currentPage.value,
+                  onTap: (value) {
+                    currentPage.value = value;
+                  },
+                ),
+              );
+      },
+    );
+  }
+
+  Future<void> createTopic() async {
+    TopicController topicController = Get.find<TopicController>();
+    UsersController usersController = Get.find<UsersController>();
+    TextEditingController nameController =
+        TextEditingController(text: topicController.topic.value.name);
+    final formKey = GlobalKey<FormState>();
+
+    Rx<ImageProvider?> imgProvider = Rx<ImageProvider?>(null);
+
+    await Get.dialog(
+      AlertDialog(
+        backgroundColor: AppColor.lightBlue,
+        titlePadding: EdgeInsets.symmetric(
+          horizontal: Get.width * 0.025,
+          vertical: Get.width * 0.01,
+        ),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: Get.width * 0.025,
+          // vertical: Get.width * 0.01,
+        ),
+        buttonPadding: EdgeInsets.symmetric(
+          horizontal: Get.width * 0.025,
+          vertical: Get.width * 0.01,
+        ),
+        actionsPadding: EdgeInsets.symmetric(
+          horizontal: Get.width * 0.025,
+          vertical: Get.width * 0.01,
+        ),
+        title: Column(
+          children: [
+            Text(
+              'Thêm chủ đề',
+              style: TextStyle(
+                fontSize: 28,
+                color: AppColor.blue,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Divider(
+              color: AppColor.blue,
+            )
+          ],
+        ),
+        content: Container(
+          width: Get.width * 0.5,
+          height: Get.height * 0.3,
+          child: Form(
+            key: formKey,
+            child: ListView(
+              children: [
+                CustomTextField(
+                  label: 'Tên chủ đề',
+                  controller: nameController,
+                  required: true,
+                ),
+                InkWell(
+                  onTap: () async {
+                    // print(imgProvide)
+                    // Image? fromPicker = await ImagePickerWeb.getImageAsWidget();
+                    // if (fromPicker != null) {
+                    //   imgProvider.value = fromPicker.image;
+                    // }
+                    MediaInfo? result = await ImagePickerWeb.getImageInfo();
+                    if (result != null) {
+                      print(result);
+                    }
+                    print(imgProvider);
+                  },
+                  child: Container(
+                    // width: Get.height * 0.3,
+                    height: Get.height * 0.2,
+                    padding: EdgeInsets.all(12),
+                    margin: EdgeInsets.symmetric(
+                      // vertical: Get.height * 0.2,
+                      horizontal: Get.width * 0.2,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(),
+                      // image: imgProvider.value == null
+                      //     ? DecorationImage(
+                      //         image: imgProvider.value!,
+                      //         fit: BoxFit.cover,
+                      //       )
+                      //     : DecorationImage(
+                      //         image: imgProvider.value!,
+                      //         fit: BoxFit.cover,
+                      //       ),
+                      color: Colors.white,
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      'Nhấn vào đây để thay đổi ảnh chủ đề.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+
+                  // child: Obx(
+                  //   () => Container(
+                  //     // width: Get.height * 0.3,
+                  //     height: Get.height * 0.2,
+                  //     padding: EdgeInsets.all(12),
+                  //     margin: EdgeInsets.symmetric(
+                  //       // vertical: Get.height * 0.2,
+                  //       horizontal: Get.width * 0.2,
+                  //     ),
+                  //     decoration: BoxDecoration(
+                  //       border: Border.all(),
+                  //       // image: imgProvider.value == null
+                  //       //     ? DecorationImage(
+                  //       //         image: imgProvider.value!,
+                  //       //         fit: BoxFit.cover,
+                  //       //       )
+                  //       //     : DecorationImage(
+                  //       //         image: imgProvider.value!,
+                  //       //         fit: BoxFit.cover,
+                  //       //       ),
+                  //       color: Colors.white,
+                  //       boxShadow: const [
+                  //         BoxShadow(
+                  //           color: Colors.black26,
+                  //           blurRadius: 10,
+                  //           offset: Offset(0, 4),
+                  //         ),
+                  //       ],
+                  //     ),
+                  //     alignment: Alignment.center,
+                  //     child: Text(
+                  //       'Nhấn vào đây để thay đổi ảnh chủ đề.',
+                  //       textAlign: TextAlign.center,
+                  //       style: TextStyle(
+                  //         fontSize: 14,
+                  //         fontStyle: FontStyle.italic,
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
+                ),
+                Text(
+                  '( Nhấn vào đây để thay đổi ảnh chủ đề )',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          ElevatedButton(
+            style: ButtonStyle(
+              backgroundColor: WidgetStatePropertyAll(Colors.red),
+              foregroundColor: WidgetStatePropertyAll(Colors.white),
+            ),
+            onPressed: () {
+              Get.back();
+            },
+            child: Text('Hủy'),
+          ),
+          ElevatedButton(
+            style: ButtonStyle(
+              backgroundColor: WidgetStatePropertyAll(AppColor.blue),
+              foregroundColor: WidgetStatePropertyAll(Colors.white),
+            ),
+            onPressed: () async {
+              if (formKey.currentState!.validate()) {
+                topicController.topic.value.name = nameController.text;
+                topicController.topic.value.user_id =
+                    usersController.user.value.id;
+                topicController.topic.value.update_at = Timestamp.now();
+                topicController.topic.value.active = false;
+                Get.back();
+                await topicController.createTopic();
+              }
+            },
+            child: Text('Xác nhận'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Widget itemTeacher(BuildContext context, Users item) {
+  //   TeacherController teacherController = Get.find<TeacherController>();
+  //   return Container(
+  //     margin: EdgeInsets.symmetric(
+  //       horizontal: Get.width * 0.03,
+  //       vertical: Get.height * 0.05,
+  //     ),
+  //     decoration: BoxDecoration(
+  //       borderRadius: BorderRadius.all(
+  //         Radius.circular(25),
+  //       ),
+  //       color: Colors.white,
+  //       boxShadow: const [
+  //         BoxShadow(
+  //           color: Colors.black26,
+  //           blurRadius: 10,
+  //           offset: Offset(0, 4),
+  //         ),
+  //       ],
+  //     ),
+  //     child: InkWell(
+  //       onTap: () {
+  //         teacherController.teacher.value = item;
+  //         Get.toNamed('/teacher_form');
+  //       },
+  //       child: Column(
+  //         children: [
+  //           Stack(
+  //             alignment: Alignment.topRight,
+  //             children: [
+  //               Container(
+  //                 height: Get.height * 0.3,
+  //                 decoration: BoxDecoration(
+  //                   image: DecorationImage(
+  //                     image: NetworkImage((item.avatar != null &&
+  //                             item.avatar != '')
+  //                         ? item.avatar!
+  //                         : 'https://res.cloudinary.com/drir6xyuq/image/upload/v1749203203/logo_icon.png'),
+  //                     fit: BoxFit.fitHeight,
+  //                   ),
+  //                 ),
+  //               ),
+  //               Container(
+  //                 padding: EdgeInsets.only(
+  //                   top: Get.width * 0.01,
+  //                   right: Get.width * 0.01,
+  //                 ),
+  //                 child: PopupMenuButton<String>(
+  //                   child: Icon(
+  //                     Icons.circle,
+  //                     color: item.active ? AppColor.blue : Colors.grey,
+  //                   ),
+  //                   onSelected: (value) async {
+  //                     if (value == 'active') {
+  //                       Users teacher = teacherController.listTeachers.value
+  //                               .firstWhereOrNull((t) => t.id == item.id) ??
+  //                           Users.initUser();
+  //                       teacher.active = true;
+  //                       teacher.reason_lock = '';
+  //                       await teacherController.updateTeacher(teacher);
+  //                     } else {
+  //                       TextEditingController reasonLockController =
+  //                           TextEditingController();
+  //                       final formKey = GlobalKey<FormState>();
+  //                       await Get.dialog(
+  //                         AlertDialog(
+  //                           backgroundColor: AppColor.lightBlue,
+  //                           titlePadding: EdgeInsets.symmetric(
+  //                             horizontal: Get.width * 0.025,
+  //                             vertical: Get.width * 0.01,
+  //                           ),
+  //                           contentPadding: EdgeInsets.symmetric(
+  //                             horizontal: Get.width * 0.025,
+  //                             // vertical: Get.width * 0.01,
+  //                           ),
+  //                           buttonPadding: EdgeInsets.symmetric(
+  //                             horizontal: Get.width * 0.025,
+  //                             vertical: Get.width * 0.01,
+  //                           ),
+  //                           actionsPadding: EdgeInsets.symmetric(
+  //                             horizontal: Get.width * 0.025,
+  //                             vertical: Get.width * 0.01,
+  //                           ),
+  //                           title: Container(
+  //                               // padding: EdgeInsets.symmetric(
+  //                               //   horizontal: Get.width * 0.01,
+  //                               // ),
+  //                               child: Column(
+  //                             children: [
+  //                               Text(
+  //                                 'Lý do khóa tài khoản',
+  //                                 style: TextStyle(
+  //                                   color: AppColor.blue,
+  //                                 ),
+  //                               ),
+  //                               const Divider(),
+  //                             ],
+  //                           )),
+  //                           content: Form(
+  //                             key: formKey,
+  //                             child: TextFormField(
+  //                               controller: reasonLockController,
+  //                               style: TextStyle(
+  //                                 fontSize: 16,
+  //                                 color: AppColor.blue,
+  //                                 // fontWeight: FontWeight.bold,
+  //                               ),
+  //                               validator: (value) {
+  //                                 if (value == null ||
+  //                                     value.isEmpty ||
+  //                                     value.trim() == '') {
+  //                                   return 'Vui lòng nhập lý do khóa tài khoản.';
+  //                                 }
+  //                                 return null;
+  //                               },
+  //                               decoration: InputDecoration(
+  //                                 hintText: 'Nhập lý do khóa tài khoản',
+  //                                 hintStyle: TextStyle(
+  //                                   fontSize: 16,
+  //                                   fontWeight: FontWeight.bold,
+  //                                   color: AppColor.labelBlue,
+  //                                 ),
+  //                                 border: OutlineInputBorder(
+  //                                   borderRadius: BorderRadius.all(
+  //                                     Radius.circular(25),
+  //                                   ),
+  //                                 ),
+  //                                 errorMaxLines: 2,
+  //                               ),
+  //                             ),
+  //                           ),
+  //                           actions: [
+  //                             ElevatedButton(
+  //                               style: ButtonStyle(
+  //                                 backgroundColor:
+  //                                     WidgetStatePropertyAll(Colors.red),
+  //                                 foregroundColor:
+  //                                     WidgetStatePropertyAll(Colors.white),
+  //                               ),
+  //                               onPressed: () {
+  //                                 Get.back();
+  //                               },
+  //                               child: Text('Hủy'),
+  //                             ),
+  //                             ElevatedButton(
+  //                               style: ButtonStyle(
+  //                                 backgroundColor:
+  //                                     WidgetStatePropertyAll(AppColor.blue),
+  //                                 foregroundColor:
+  //                                     WidgetStatePropertyAll(Colors.white),
+  //                               ),
+  //                               onPressed: () async {
+  //                                 if (formKey.currentState!.validate()) {
+  //                                   Users teacher = teacherController
+  //                                           .listTeachers.value
+  //                                           .firstWhereOrNull(
+  //                                               (t) => t.id == item.id) ??
+  //                                       Users.initUser();
+  //                                   teacher.active = false;
+  //                                   teacher.reason_lock =
+  //                                       reasonLockController.text;
+  //                                   Get.back();
+  //                                   await teacherController
+  //                                       .updateTeacher(teacher);
+  //                                 }
+  //                               },
+  //                               child: Text('Xác nhận'),
+  //                             ),
+  //                           ],
+  //                         ),
+  //                       );
+  //                     }
+  //                   },
+  //                   color: AppColor.lightBlue,
+  //                   itemBuilder: (context) => [
+  //                     item.active
+  //                         ? PopupMenuItem(
+  //                             value: 'lock',
+  //                             child: ListTile(
+  //                               leading: Icon(
+  //                                 Icons.circle,
+  //                                 color: Colors.grey,
+  //                               ),
+  //                               textColor: Colors.grey,
+  //                               titleTextStyle: TextStyle(
+  //                                 fontWeight: FontWeight.bold,
+  //                               ),
+  //                               title: Text('Khóa'),
+  //                             ),
+  //                           )
+  //                         : PopupMenuItem(
+  //                             value: 'active',
+  //                             child: ListTile(
+  //                               leading: Icon(
+  //                                 Icons.circle,
+  //                                 color: AppColor.blue,
+  //                               ),
+  //                               textColor: AppColor.blue,
+  //                               titleTextStyle: TextStyle(
+  //                                 fontWeight: FontWeight.bold,
+  //                               ),
+  //                               title: Text('Kích hoạt'),
+  //                             ),
+  //                           ),
+  //                   ],
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //           Divider(),
+  //           Container(
+  //             padding: EdgeInsets.all(Get.height * 0.01),
+  //             child: Text(
+  //               item.fullname.toUpperCase(),
+  //               style: const TextStyle(
+  //                 fontSize: 28,
+  //                 fontWeight: FontWeight.bold,
+  //               ),
+  //             ),
+  //           ),
+  //           Container(
+  //             padding: EdgeInsets.all(Get.height * 0.01),
+  //             child: Row(
+  //               mainAxisAlignment: MainAxisAlignment.center,
+  //               children: [
+  //                 Icon(Icons.person),
+  //                 Text(
+  //                   ' ${item.username}',
+  //                   style: const TextStyle(
+  //                     fontSize: 18,
+  //                     fontWeight: FontWeight.bold,
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //           Container(
+  //             padding: EdgeInsets.all(Get.height * 0.01),
+  //             child: Row(
+  //               mainAxisAlignment: MainAxisAlignment.center,
+  //               children: [
+  //                 Icon(Icons.phone),
+  //                 Text(
+  //                   ' ${item.phone ?? ''}',
+  //                   style: const TextStyle(
+  //                     fontSize: 18,
+  //                     fontWeight: FontWeight.bold,
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //           Container(
+  //             padding: EdgeInsets.all(Get.height * 0.01),
+  //             child: Row(
+  //               mainAxisAlignment: MainAxisAlignment.center,
+  //               children: [
+  //                 Icon(Icons.email),
+  //                 Text(
+  //                   ' ${item.email ?? ''}',
+  //                   style: const TextStyle(
+  //                     fontSize: 18,
+  //                     fontWeight: FontWeight.bold,
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+}
