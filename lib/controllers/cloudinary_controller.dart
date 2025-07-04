@@ -9,8 +9,8 @@ class CloudinaryController {
     apiSecret: Config.apiSecret,
     cloudName: Config.cloudName,
   );
-  Future<String?> uploadImageFile(
-      filePath, String fileName, String folderName) async {
+  Future<String> uploadImageFile(
+      String filePath, String fileName, String folderName) async {
     if (filePath != '') {
       final response = await cloudinary.upload(
         file: filePath,
@@ -19,12 +19,12 @@ class CloudinaryController {
         progressCallback: (count, total) {},
       );
       if (response.isSuccessful) {
-        return response.secureUrl;
+        return response.secureUrl ?? '';
       } else {
-        return 'https://res.cloudinary.com/dg3p7nxyp/image/upload/v1723004576/app/logo_circle.png';
+        return 'https://res.cloudinary.com/drir6xyuq/image/upload/v1749203203/logo_icon.png';
       }
     }
-    return 'https://res.cloudinary.com/dg3p7nxyp/image/upload/v1723004576/app/logo_circle.png';
+    return 'https://res.cloudinary.com/drir6xyuq/image/upload/v1749203203/logo_icon.png';
   }
 
   Future<String> uploadImage(

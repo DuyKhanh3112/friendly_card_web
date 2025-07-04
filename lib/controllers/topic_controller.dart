@@ -49,7 +49,7 @@ class TopicController extends GetxController {
     WriteBatch batch = FirebaseFirestore.instance.batch();
     String id = topicCollection.doc().id;
     String imgUrl =
-        await CloudinaryController().uploadImage(imgBase64, id, 'topic');
+        await CloudinaryController().uploadImage(imgBase64, id, 'topic/$id');
     topic.value.image = imgUrl;
     DocumentReference refTopic = topicCollection.doc(id);
     topic.value.update_at = Timestamp.now();

@@ -1,0 +1,94 @@
+// ignore_for_file: non_constant_identifier_names
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class Vocabulary {
+  String id;
+  String user_id;
+  String topic_id;
+  String name;
+  Timestamp update_at;
+  bool active;
+  String image;
+  String mean;
+  String example;
+  String mean_example;
+  String transcription;
+
+  Vocabulary({
+    required this.id,
+    required this.user_id,
+    required this.topic_id,
+    required this.name,
+    required this.update_at,
+    required this.active,
+    required this.image,
+    required this.example,
+    required this.mean_example,
+    required this.mean,
+    required this.transcription,
+  });
+
+  factory Vocabulary.initVocabulary() {
+    return Vocabulary(
+      id: '',
+      name: '',
+      user_id: '',
+      topic_id: '',
+      update_at: Timestamp.now(),
+      active: false,
+      image: '',
+      example: '',
+      mean: '',
+      transcription: '',
+      mean_example: '',
+    );
+  }
+
+  static Vocabulary fromJson(Map<String, dynamic> json) {
+    return Vocabulary(
+        id: json['id'],
+        name: json['name'],
+        user_id: json['user_id'],
+        topic_id: json['topic_id'],
+        active: json['active'],
+        update_at: json['update_at'],
+        image: json['image'],
+        example: json['example'],
+        mean: json['mean'],
+        transcription: json['transcription'],
+        mean_example: json['mean_example']);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'user_id': user_id,
+      'topic_id': topic_id,
+      'active': active,
+      'update_at': update_at,
+      'image': image,
+      'example': example,
+      'mean': mean,
+      'transcription': transcription,
+      'mean_example': mean_example
+    };
+  }
+
+  Map<String, dynamic> toVal() {
+    return {
+      // 'id': id,
+      'name': name,
+      'user_id': user_id,
+      'topic_id': topic_id,
+      'active': active,
+      'update_at': update_at,
+      'image': image,
+      'example': example,
+      'mean': mean,
+      'transcription': transcription,
+      'mean_example': mean_example
+    };
+  }
+}

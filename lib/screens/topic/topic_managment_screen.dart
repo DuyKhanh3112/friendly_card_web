@@ -15,7 +15,9 @@ import 'package:friendly_card_web/controllers/main_controller.dart';
 import 'package:friendly_card_web/controllers/teacher_controller.dart';
 import 'package:friendly_card_web/controllers/topic_controller.dart';
 import 'package:friendly_card_web/controllers/users_controller.dart';
+import 'package:friendly_card_web/controllers/vocabulary_controller.dart';
 import 'package:friendly_card_web/models/topic.dart';
+import 'package:friendly_card_web/models/vocabulary.dart';
 import 'package:friendly_card_web/widget/empty_data.dart';
 import 'package:friendly_card_web/widget/loading_page.dart';
 import 'package:friendly_card_web/models/users.dart';
@@ -522,9 +524,14 @@ class TopicManagmentScreen extends StatelessWidget {
                                       WidgetStatePropertyAll(Colors.white),
                                 ),
                                 onPressed: () async {
-                                  Get.toNamed('/topic_form');
+                                  Get.back();
+                                  topicController.loading.value = true;
+                                  await Get.find<VocabularyController>()
+                                      .loadVocabularyTopic();
+                                  topicController.loading.value = false;
+                                  Get.toNamed('/vocabulary');
                                 },
-                                child: Text('Xem chi tiết'),
+                                child: Text('Từ vựng'),
                               ),
                             ],
                           )
