@@ -12,6 +12,7 @@ import 'package:friendly_card_web/components/custom_button.dart';
 import 'package:friendly_card_web/components/custom_search_field.dart';
 import 'package:friendly_card_web/components/custom_text_field.dart';
 import 'package:friendly_card_web/controllers/main_controller.dart';
+import 'package:friendly_card_web/controllers/question_controller.dart';
 import 'package:friendly_card_web/controllers/teacher_controller.dart';
 import 'package:friendly_card_web/controllers/topic_controller.dart';
 import 'package:friendly_card_web/controllers/users_controller.dart';
@@ -531,6 +532,26 @@ class TopicManagmentScreen extends StatelessWidget {
                                   Get.toNamed('/vocabulary');
                                 },
                                 child: Text('Từ vựng'),
+                              ),
+                              SizedBox(
+                                width: 64,
+                              ),
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                  backgroundColor:
+                                      WidgetStatePropertyAll(AppColor.blue),
+                                  foregroundColor:
+                                      WidgetStatePropertyAll(Colors.white),
+                                ),
+                                onPressed: () async {
+                                  Get.back();
+                                  topicController.loading.value = true;
+                                  await Get.find<QuestionController>()
+                                      .loadQuestionData();
+                                  topicController.loading.value = false;
+                                  Get.toNamed('/question');
+                                },
+                                child: Text('Câu hỏi'),
                               ),
                             ],
                           )

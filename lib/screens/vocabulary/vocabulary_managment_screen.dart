@@ -2,7 +2,6 @@
 
 import 'dart:convert';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flexible_grid_view/flexible_grid_view.dart';
 import 'package:flutter/material.dart';
 import 'package:friendly_card_web/components/custom_button.dart';
@@ -439,12 +438,12 @@ class VocabularyManagmentScreen extends StatelessWidget {
                                           meanExampleController.text;
                                       voca.topic_id =
                                           topicController.topic.value.id;
-                                      voca.user_id =
-                                          usersController.user.value.id;
                                       Get.back();
                                       await vocabularyController
                                           .createVocabulary(
                                               voca, imgBase64.value);
+                                      await vocabularyController
+                                          .loadVocabularyTopic();
                                     } else {
                                       vocabularyController.vocabulary.value
                                           .name = nameController.text;

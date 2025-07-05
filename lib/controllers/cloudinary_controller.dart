@@ -46,7 +46,6 @@ class CloudinaryController {
       }
       return 'https://res.cloudinary.com/drir6xyuq/image/upload/v1749203203/logo_icon.png';
     } catch (e) {
-      print('Exception khi upload: $e');
       return 'https://res.cloudinary.com/drir6xyuq/image/upload/v1749203203/logo_icon.png';
     }
   }

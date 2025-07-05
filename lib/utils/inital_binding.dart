@@ -15,6 +15,8 @@ class InitalBinding extends Bindings {
     Get.put(TopicController());
     Get.put(VocabularyController());
     Get.put(QuestionController());
+
+    await Get.find<QuestionController>().loadQuestionType();
     // Get.find<UsersController>().checkLogin();
   }
 }

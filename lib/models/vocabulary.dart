@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Vocabulary {
   String id;
-  String user_id;
   String topic_id;
   String name;
   Timestamp update_at;
@@ -17,7 +16,6 @@ class Vocabulary {
 
   Vocabulary({
     required this.id,
-    required this.user_id,
     required this.topic_id,
     required this.name,
     required this.update_at,
@@ -33,7 +31,6 @@ class Vocabulary {
     return Vocabulary(
       id: '',
       name: '',
-      user_id: '',
       topic_id: '',
       update_at: Timestamp.now(),
       active: false,
@@ -49,7 +46,6 @@ class Vocabulary {
     return Vocabulary(
         id: json['id'],
         name: json['name'],
-        user_id: json['user_id'],
         topic_id: json['topic_id'],
         active: json['active'],
         update_at: json['update_at'],
@@ -64,7 +60,6 @@ class Vocabulary {
     return {
       'id': id,
       'name': name,
-      'user_id': user_id,
       'topic_id': topic_id,
       'active': active,
       'update_at': update_at,
@@ -80,7 +75,6 @@ class Vocabulary {
     return {
       // 'id': id,
       'name': name,
-      'user_id': user_id,
       'topic_id': topic_id,
       'active': active,
       'update_at': update_at,

@@ -6,7 +6,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:friendly_card_web/config.dart';
 import 'package:friendly_card_web/controllers/cloudinary_controller.dart';
 import 'package:friendly_card_web/controllers/topic_controller.dart';
-import 'package:friendly_card_web/controllers/users_controller.dart';
 import 'package:friendly_card_web/models/vocabulary.dart';
 import 'package:friendly_card_web/utils/tool.dart';
 import 'package:get/get.dart';
@@ -51,14 +50,13 @@ class VocabularyController extends GetxController {
     batch.set(vocaRef, item.toVal());
 
     await batch.commit();
-    await loadVocabularyTopic();
+    // await loadVocabularyTopic();
     loading.value = false;
   }
 
   Future<void> generateVocabulary() async {
     loading.value = true;
     TopicController topicController = Get.find<TopicController>();
-    UsersController usersController = Get.find<UsersController>();
     final url = Uri.parse(
         'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent');
 
@@ -96,7 +94,6 @@ class VocabularyController extends GetxController {
         vocabList.forEach((item) async {
           item['id'] = '';
           item['name'] = item['vocabulary'];
-          item['user_id'] = usersController.user.value.id;
           item['topic_id'] = topicController.topic.value.id;
           item['active'] = false;
           item['update_at'] = Timestamp.now();
@@ -124,7 +121,6 @@ class VocabularyController extends GetxController {
 
   Future<void> updateVocabulary(String imgBase64) async {
     loading.value = true;
-    TopicController topicController = Get.find<TopicController>();
     if (imgBase64 != '') {
       String imgUrl = await CloudinaryController().uploadImage(imgBase64,
           vocabulary.value.id, 'topic/${vocabulary.value.topic_id}/vocabulary');
