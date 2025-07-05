@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:friendly_card_web/components/custom_button.dart';
 import 'package:friendly_card_web/components/custom_dialog.dart';
 import 'package:friendly_card_web/components/custom_text_field.dart';
+import 'package:friendly_card_web/controllers/question_controller.dart';
 import 'package:friendly_card_web/controllers/users_controller.dart';
 import 'package:friendly_card_web/widget/loading_page.dart';
 import 'package:friendly_card_web/utils/app_color.dart';
@@ -57,6 +58,14 @@ class LoginPage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            TextButton(
+                                onPressed: () async {
+                                  usersController.loading.value = true;
+                                  await Get.find<QuestionController>()
+                                      .generateQuestion();
+                                  usersController.loading.value = false;
+                                },
+                                child: Text('data')),
                             Image.asset(
                               'images/logo.png',
                               height: Get.height * 0.15,
@@ -173,7 +182,7 @@ class LoginPage extends StatelessWidget {
                                         onPressed: () {
                                           Get.back();
                                         },
-                                        child: Text('Hủy'),
+                                        child: Text('Đóng'),
                                       ),
                                       ElevatedButton(
                                         style: ButtonStyle(

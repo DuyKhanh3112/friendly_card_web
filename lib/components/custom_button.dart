@@ -10,12 +10,14 @@ class CustomButton extends StatelessWidget {
     this.onClicked,
     this.bgColor,
     this.textColor,
+    this.icon,
   });
 
   final String title;
   final Future<void> Function()? onClicked;
   final Color? bgColor;
   final Color? textColor;
+  final Widget? icon;
 
   @override
   Widget build(BuildContext context) {

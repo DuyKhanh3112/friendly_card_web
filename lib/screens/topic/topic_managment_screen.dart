@@ -161,12 +161,12 @@ class TopicManagmentScreen extends StatelessWidget {
                     BottomNavigationBarItem(
                       icon: Icon(Icons.check_circle),
                       label:
-                          'Đang hiển thị (${listTopic.value.where((item) => item.active).length})',
+                          'Đã được duyệt (${listTopic.value.where((item) => item.active).length})',
                     ),
                     BottomNavigationBarItem(
                       icon: Icon(Icons.cancel),
                       label:
-                          'Đã bị ẩn (${listTopic.value.where((item) => !item.active).length})',
+                          'Đang chờ duyệt (${listTopic.value.where((item) => !item.active).length})',
                     ),
                   ],
                   currentIndex: currentPage.value,
@@ -257,7 +257,7 @@ class TopicManagmentScreen extends StatelessWidget {
                                           titleTextStyle: TextStyle(
                                             fontWeight: FontWeight.bold,
                                           ),
-                                          title: Text('Khóa'),
+                                          title: Text('Chờ duyệt'),
                                         ),
                                       )
                                     : PopupMenuItem(
@@ -271,7 +271,7 @@ class TopicManagmentScreen extends StatelessWidget {
                                           titleTextStyle: TextStyle(
                                             fontWeight: FontWeight.bold,
                                           ),
-                                          title: Text('Kích hoạt'),
+                                          title: Text('Duyệt'),
                                         ),
                                       ),
                               ],
@@ -471,7 +471,7 @@ class TopicManagmentScreen extends StatelessWidget {
                       onPressed: () {
                         Get.back();
                       },
-                      child: Text('Hủy'),
+                      child: Text('Đóng'),
                     ),
                     usersController.user.value.role == 'teacher'
                         ? Row(
@@ -494,7 +494,6 @@ class TopicManagmentScreen extends StatelessWidget {
                                         usersController.user.value.id;
                                     topicController.topic.value.update_at =
                                         Timestamp.now();
-                                    topicController.topic.value.active = false;
                                     Get.back();
                                     if (topicController.topic.value.id == '') {
                                       await topicController
@@ -532,6 +531,30 @@ class TopicManagmentScreen extends StatelessWidget {
                                   Get.toNamed('/vocabulary');
                                 },
                                 child: Text('Từ vựng'),
+                              ),
+                            ],
+                          )
+                        : SizedBox(),
+                    usersController.user.value.role == 'admin'
+                        ? Row(
+                            children: [
+                              SizedBox(
+                                width: 64,
+                              ),
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                  backgroundColor:
+                                      WidgetStatePropertyAll(AppColor.warm),
+                                  foregroundColor:
+                                      WidgetStatePropertyAll(Colors.white),
+                                ),
+                                onPressed: () async {
+                                  await topicController.updateTopicStatus(
+                                      topicController.topic.value);
+                                },
+                                child: Text(topicController.topic.value.active
+                                    ? 'Chờ duyệt'
+                                    : 'Duyệt'),
                               ),
                             ],
                           )

@@ -18,6 +18,7 @@ class CustomTextField extends StatelessWidget {
     this.type,
     this.hint,
     this.widthPrefix,
+    this.multiLines,
   });
 
   final String label;
@@ -26,6 +27,7 @@ class CustomTextField extends StatelessWidget {
   final bool? required;
   final bool? readOnly;
   final bool? isPassword;
+  final bool? multiLines;
   final void Function(String)? onChanged;
   final ContactType? type;
   final double? widthPrefix;
@@ -46,6 +48,8 @@ class CustomTextField extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
           obscureText: hideContent.value,
+          maxLines: multiLines == true ? 3 : 1,
+          minLines: 1,
           decoration: InputDecoration(
             errorMaxLines: 2,
             hint: Text(
