@@ -1,31 +1,28 @@
 // ignore_for_file: invalid_use_of_protected_member, avoid_unnecessary_containers, sized_box_for_whitespace, deprecated_member_use, sort_child_properties_last, prefer_const_constructors
-
-import 'dart:convert';
-
+import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flexible_grid_view/flexible_grid_view.dart';
 import 'package:flutter/material.dart';
 import 'package:friendly_card_web/components/custom_button.dart';
+import 'package:friendly_card_web/components/custom_dialog.dart';
+import 'package:friendly_card_web/components/custom_dropdown.dart';
 import 'package:friendly_card_web/components/custom_text_field.dart';
 import 'package:friendly_card_web/controllers/question_controller.dart';
 import 'package:friendly_card_web/controllers/topic_controller.dart';
 import 'package:friendly_card_web/controllers/users_controller.dart';
-import 'package:friendly_card_web/controllers/vocabulary_controller.dart';
 import 'package:friendly_card_web/models/option.dart';
 import 'package:friendly_card_web/models/question.dart';
-import 'package:friendly_card_web/models/vocabulary.dart';
+import 'package:friendly_card_web/models/question_type.dart';
 import 'package:friendly_card_web/utils/app_color.dart';
 import 'package:friendly_card_web/utils/tool.dart';
 import 'package:friendly_card_web/widget/loading_page.dart';
 import 'package:get/get.dart';
-import 'package:image_picker_web/image_picker_web.dart';
 
 class QuestionManagementScreen extends StatelessWidget {
   const QuestionManagementScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    VocabularyController vocabularyController =
-        Get.find<VocabularyController>();
     TopicController topicController = Get.find<TopicController>();
     QuestionController questionController = Get.find<QuestionController>();
 
@@ -87,9 +84,9 @@ class QuestionManagementScreen extends StatelessWidget {
                                 title: 'Thêm câu hỏi',
                                 bgColor: AppColor.blue,
                                 onClicked: () async {
-                                  vocabularyController.vocabulary.value =
-                                      Vocabulary.initVocabulary();
-                                  await formVocabulary();
+                                  questionController.question.value =
+                                      Question.initQuestion();
+                                  await formQuestion(context);
                                 },
                               ),
                             ),
@@ -124,7 +121,7 @@ class QuestionManagementScreen extends StatelessWidget {
                                 .where((item) =>
                                     item.active == (currentPage.value == 0))
                                 .map((item) {
-                              return questionItem(item);
+                              return questionItem(item, context);
                             }).toList()),
                       ),
                     ],
@@ -172,315 +169,7 @@ class QuestionManagementScreen extends StatelessWidget {
     });
   }
 
-  Future<void> formVocabulary() async {
-    VocabularyController vocabularyController =
-        Get.find<VocabularyController>();
-    TopicController topicController = Get.find<TopicController>();
-    UsersController usersController = Get.find<UsersController>();
-    final formKey = GlobalKey<FormState>();
-
-    RxString imgBase64 = ''.obs;
-    RxString imgUrl = vocabularyController.vocabulary.value.image.obs;
-
-    TextEditingController nameController =
-        TextEditingController(text: vocabularyController.vocabulary.value.name);
-    TextEditingController meanController =
-        TextEditingController(text: vocabularyController.vocabulary.value.mean);
-    TextEditingController transcriptionController = TextEditingController(
-        text: vocabularyController.vocabulary.value.transcription);
-    TextEditingController exampleController = TextEditingController(
-        text: vocabularyController.vocabulary.value.example);
-    TextEditingController meanExampleController = TextEditingController(
-        text: vocabularyController.vocabulary.value.mean_example);
-    await Get.dialog(
-      Obx(
-        () => AlertDialog(
-          titlePadding: EdgeInsets.symmetric(
-            horizontal: Get.width * 0.025,
-            vertical: Get.width * 0.01,
-          ),
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: Get.width * 0.025,
-            // vertical: Get.width * 0.01,
-          ),
-          buttonPadding: EdgeInsets.symmetric(
-            horizontal: Get.width * 0.025,
-            vertical: Get.width * 0.01,
-          ),
-          actionsPadding: EdgeInsets.symmetric(
-            horizontal: Get.width * 0.025,
-            vertical: Get.width * 0.01,
-          ),
-          title: Column(
-            children: [
-              Text(
-                'Thông tin từ vựng',
-                style: TextStyle(
-                  fontSize: 28,
-                  color: AppColor.blue,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Divider(
-                color: AppColor.blue,
-              ),
-            ],
-          ),
-          content: Container(
-            width: Get.width * 0.5,
-            // height: Get.height * 0.3,
-            child: Form(
-              key: formKey,
-              child: ListView(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: Get.width * 0.3,
-                        child: Column(
-                          children: [
-                            CustomTextField(
-                              label: 'Tên từ vựng',
-                              controller: nameController,
-                              required: true,
-                              readOnly:
-                                  usersController.user.value.role != 'teacher',
-                            ),
-                            CustomTextField(
-                              label: 'Nghĩa từ vựng',
-                              controller: meanController,
-                              required: true,
-                              readOnly:
-                                  usersController.user.value.role != 'teacher',
-                            ),
-                            CustomTextField(
-                              label: 'Phiên âm',
-                              controller: transcriptionController,
-                              required: true,
-                              readOnly:
-                                  usersController.user.value.role != 'teacher',
-                            ),
-                            CustomTextField(
-                              label: 'Chủ đề',
-                              controller: TextEditingController(
-                                  text: topicController.topic.value.name),
-                              // required: true,
-                              readOnly: true,
-                            ),
-                            CustomTextField(
-                              label: 'Ví dụ',
-                              controller: exampleController,
-                              multiLines: true,
-                              required: true,
-                              readOnly:
-                                  usersController.user.value.role != 'teacher',
-                            ),
-                            CustomTextField(
-                              label: 'Nghĩa ví dụ',
-                              multiLines: true,
-                              controller: meanExampleController,
-                              required: true,
-                              readOnly:
-                                  usersController.user.value.role != 'teacher',
-                            ),
-                          ],
-                        ),
-                      ),
-                      InkWell(
-                        onTap: usersController.user.value.role != 'teacher'
-                            ? null
-                            : () async {
-                                var result =
-                                    await ImagePickerWeb.getImageAsBytes();
-                                if (result != null) {
-                                  imgBase64.value = base64Encode(result);
-                                }
-                              },
-                        child: Column(
-                          children: [
-                            Container(
-                              height: Get.height * 0.25,
-                              width: Get.height * 0.25,
-                              padding: EdgeInsets.all(12),
-                              margin: EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                // border: Border.all(),
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(32),
-                                ),
-                                image: vocabularyController
-                                            .vocabulary.value.id ==
-                                        ''
-                                    ? imgBase64.value == ''
-                                        ? null
-                                        : DecorationImage(
-                                            image: MemoryImage(
-                                                base64Decode(imgBase64.value)),
-                                            fit: BoxFit.cover,
-                                          )
-                                    : imgBase64.value == ''
-                                        ? imgUrl.value == ''
-                                            ? null
-                                            : DecorationImage(
-                                                image:
-                                                    NetworkImage(imgUrl.value),
-                                                fit: BoxFit.cover,
-                                              )
-                                        : DecorationImage(
-                                            image: MemoryImage(
-                                                base64Decode(imgBase64.value)),
-                                            fit: BoxFit.cover,
-                                          ),
-                                color: Colors.white,
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Colors.black26,
-                                    blurRadius: 10,
-                                    offset: Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              alignment: Alignment.center,
-                            ),
-                            // usersController.user.value.role == 'teacher'
-                            //     ?
-                            Text(
-                              'Nhấn vào đây để thay đổi ảnh từ vựng.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontStyle: FontStyle.italic,
-                                color: AppColor.labelBlue,
-                              ),
-                            )
-                            // : SizedBox(),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            Column(
-              children: [
-                Divider(
-                  color: AppColor.blue,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
-                      style: ButtonStyle(
-                        backgroundColor: WidgetStatePropertyAll(Colors.red),
-                        foregroundColor: WidgetStatePropertyAll(Colors.white),
-                      ),
-                      onPressed: () {
-                        Get.back();
-                      },
-                      child: Text('Đóng'),
-                    ),
-                    usersController.user.value.role == 'teacher'
-                        ? Row(
-                            children: [
-                              SizedBox(
-                                width: 64,
-                              ),
-                              ElevatedButton(
-                                style: ButtonStyle(
-                                  backgroundColor:
-                                      WidgetStatePropertyAll(AppColor.blue),
-                                  foregroundColor:
-                                      WidgetStatePropertyAll(Colors.white),
-                                ),
-                                onPressed: () async {
-                                  if (formKey.currentState!.validate()) {
-                                    if (vocabularyController
-                                            .vocabulary.value.id ==
-                                        '') {
-                                      Vocabulary voca =
-                                          Vocabulary.initVocabulary();
-                                      voca.name = nameController.text;
-                                      voca.mean = meanController.text;
-                                      voca.transcription =
-                                          transcriptionController.text;
-                                      voca.example = exampleController.text;
-                                      voca.mean_example =
-                                          meanExampleController.text;
-                                      voca.topic_id =
-                                          topicController.topic.value.id;
-                                      Get.back();
-                                      await vocabularyController
-                                          .createVocabulary(
-                                              voca, imgBase64.value);
-                                    } else {
-                                      vocabularyController.vocabulary.value
-                                          .name = nameController.text;
-                                      vocabularyController.vocabulary.value
-                                          .mean = meanController.text;
-                                      vocabularyController
-                                              .vocabulary.value.transcription =
-                                          transcriptionController.text;
-                                      vocabularyController.vocabulary.value
-                                          .example = exampleController.text;
-                                      vocabularyController
-                                              .vocabulary.value.mean_example =
-                                          meanExampleController.text;
-                                      Get.back();
-                                      await vocabularyController
-                                          .updateVocabulary(imgBase64.value);
-                                    }
-                                    vocabularyController.vocabulary.value =
-                                        Vocabulary.initVocabulary();
-                                  }
-                                },
-                                child: Text('Xác nhận'),
-                              ),
-                            ],
-                          )
-                        : SizedBox(),
-                    usersController.user.value.role == 'admin'
-                        ? Row(
-                            children: [
-                              SizedBox(
-                                width: 64,
-                              ),
-                              ElevatedButton(
-                                style: ButtonStyle(
-                                  backgroundColor:
-                                      WidgetStatePropertyAll(AppColor.warm),
-                                  foregroundColor:
-                                      WidgetStatePropertyAll(Colors.white),
-                                ),
-                                onPressed: () async {
-                                  await vocabularyController
-                                      .updateStatusVocabulary(
-                                          vocabularyController
-                                              .vocabulary.value);
-                                },
-                                child: Text(
-                                    vocabularyController.vocabulary.value.active
-                                        ? 'Chờ duyệt'
-                                        : 'Duyệt'),
-                              ),
-                            ],
-                          )
-                        : SizedBox(),
-                  ],
-                ),
-              ],
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget questionItem(Question item) {
+  Widget questionItem(Question item, BuildContext context) {
     QuestionController questionController = Get.find<QuestionController>();
     List<Option> listOption = questionController.listOption
         .where((opt) => opt.question_id == item.id)
@@ -491,11 +180,12 @@ class QuestionManagementScreen extends StatelessWidget {
       children: [
         InkWell(
           onTap: () async {
-            // vocabularyController.vocabulary.value = item;
-            // await formVocabulary();
+            questionController.question.value = item;
+            await formQuestion(context);
           },
           child: Container(
             // width: Get.width * 0.8,
+            alignment: Alignment.topLeft,
             margin: EdgeInsets.symmetric(
               vertical: Get.height * 0.02,
               horizontal: Get.width * 0.02,
@@ -587,47 +277,395 @@ class QuestionManagementScreen extends StatelessWidget {
             ),
             color: AppColor.lightBlue,
             itemBuilder: (context) =>
-                // usersController.user.value.role == 'teacher'
-                //     ? []
-                //     :
-                [
-              item.active
-                  ? const PopupMenuItem(
-                      value: 'lock',
-                      child: ListTile(
-                        leading: Icon(
-                          Icons.circle,
-                          color: Colors.grey,
-                        ),
-                        textColor: Colors.grey,
-                        titleTextStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                        title: Text('Chờ duyệt'),
-                      ),
-                    )
-                  : PopupMenuItem(
-                      value: 'active',
-                      child: ListTile(
-                        leading: Icon(
-                          Icons.circle,
-                          color: AppColor.blue,
-                        ),
-                        textColor: AppColor.blue,
-                        titleTextStyle: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                        title: const Text('Duyệt'),
-                      ),
-                    ),
-            ],
+                Get.find<UsersController>().user.value.role == 'teacher'
+                    ? []
+                    : [
+                        item.active
+                            ? const PopupMenuItem(
+                                value: 'lock',
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.circle,
+                                    color: Colors.grey,
+                                  ),
+                                  textColor: Colors.grey,
+                                  titleTextStyle: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  title: Text('Chờ duyệt'),
+                                ),
+                              )
+                            : PopupMenuItem(
+                                value: 'active',
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.circle,
+                                    color: AppColor.blue,
+                                  ),
+                                  textColor: AppColor.blue,
+                                  titleTextStyle: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  title: const Text('Duyệt'),
+                                ),
+                              ),
+                      ],
             onSelected: (value) async {
+              await questionController.updateStatusQuestion(item);
               // await topicController.updateTopicStatus(item);
               // await vocabularyController.updateStatusVocabulary(item);
             },
           ),
         ),
       ],
+    );
+  }
+
+  Future<void> formQuestion(BuildContext context) async {
+    QuestionController questionController = Get.find<QuestionController>();
+    UsersController usersController = Get.find<UsersController>();
+    final formKey = GlobalKey<FormState>();
+
+    TextEditingController contenController =
+        TextEditingController(text: questionController.question.value.content);
+    TextEditingController meanContentController =
+        TextEditingController(text: questionController.question.value.mean);
+
+    Rx<QuestionType> questionType = (questionController.listQuestionType.value
+                .firstWhereOrNull((type) =>
+                    type.id ==
+                    questionController.question.value.question_type_id) ??
+            QuestionType.initQuestionType())
+        .obs;
+    RxList<Rx<Option>> listOption = <Rx<Option>>[
+      Option.initOption().obs,
+      Option.initOption().obs,
+      Option.initOption().obs,
+      Option.initOption().obs,
+    ].obs;
+    if (questionController.question.value.id != '') {
+      listOption.value = questionController.listOption.value
+          .where(
+              (opt) => opt.question_id == questionController.question.value.id)
+          .map((opt) => opt.obs)
+          .toList();
+      if (listOption.isEmpty) {
+        var newOpt = Option.initOption().obs;
+        newOpt.value.question_id = questionController.question.value.id;
+        listOption.value = [
+          newOpt,
+          newOpt,
+          newOpt,
+          newOpt,
+        ];
+      }
+    }
+    await Get.dialog(
+      Obx(() {
+        return AlertDialog(
+          titlePadding: EdgeInsets.symmetric(
+            horizontal: Get.width * 0.025,
+            vertical: Get.width * 0.01,
+          ),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: Get.width * 0.025,
+            // vertical: Get.width * 0.01,
+          ),
+          buttonPadding: EdgeInsets.symmetric(
+            horizontal: Get.width * 0.025,
+            vertical: Get.width * 0.01,
+          ),
+          actionsPadding: EdgeInsets.symmetric(
+            horizontal: Get.width * 0.025,
+            vertical: Get.width * 0.01,
+          ),
+          title: Column(
+            children: [
+              Text(
+                'Thông tin câu hỏi',
+                style: TextStyle(
+                  fontSize: 28,
+                  color: AppColor.blue,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Divider(
+                color: AppColor.blue,
+              ),
+            ],
+          ),
+          content: Container(
+            width: Get.width * 0.5,
+            // height: Get.height * 0.3,
+            child: Form(
+              key: formKey,
+              child: ListView(
+                children: [
+                  Container(
+                    // width: Get.width * 0.3,
+                    child: Column(
+                      children: [
+                        CustomTextField(
+                          label: 'Nội dung',
+                          multiLines: true,
+                          controller: contenController,
+                          required: true,
+                          readOnly:
+                              usersController.user.value.role != 'teacher',
+                        ),
+                        CustomTextField(
+                          label: 'Nghĩa câu hỏi',
+                          multiLines: true,
+                          controller: meanContentController,
+                          required: true,
+                          readOnly:
+                              usersController.user.value.role != 'teacher',
+                        ),
+                        CustomDropdown(
+                          items: questionController.listQuestionType.value
+                              .map(
+                                (item) => DropdownMenuItem(
+                                  child: Text(
+                                    item.name,
+                                    overflow: TextOverflow.ellipsis,
+                                    strutStyle: StrutStyle.disabled,
+                                  ),
+                                  value: item,
+                                ),
+                              )
+                              .toList(),
+                          value: questionController.listQuestionType.value
+                              .firstWhereOrNull(
+                                  (t) => t.id == questionType.value.id)
+                              .obs,
+                          label: 'Loại câu hỏi',
+                          width: Get.width * 0.5,
+                          onChanged: (p0) {
+                            if (p0 == null) {
+                              questionType.value =
+                                  QuestionType.initQuestionType();
+                            } else {
+                              questionType.value = p0;
+                            }
+                          },
+                        ),
+                        Column(
+                          children: List.generate(
+                            questionType.value.num_option,
+                            (index) {
+                              var item = listOption.value[index].value;
+                              TextEditingController optController =
+                                  TextEditingController(text: item.content);
+
+                              if (questionType.value.num_option == 1) {
+                                item.is_correct = true;
+                              }
+                              return ListTile(
+                                leading: InkWell(
+                                  onTap: () {
+                                    item.is_correct = true;
+                                    for (var element in listOption.value) {
+                                      if (listOption.value.indexOf(element) ==
+                                          index) {
+                                        element.value = item;
+                                      } else {
+                                        element.value.is_correct = false;
+                                      }
+                                    }
+                                  },
+                                  child: Icon(item.is_correct
+                                      ? Icons.check_box_outlined
+                                      : Icons.check_box_outline_blank),
+                                ),
+                                title: CustomTextField(
+                                  label: questionType.value.num_option == 1
+                                      ? 'Đáp án'
+                                      : 'Lựa chọn ${index + 1}',
+                                  controller: optController,
+                                  bgColor:
+                                      item.is_correct ? Colors.amber : null,
+                                  required: true,
+                                  onChanged: (p0) {
+                                    item.content = p0;
+                                    for (var element in listOption.value) {
+                                      if (listOption.value.indexOf(element) ==
+                                          index) {
+                                        element.value.content = p0;
+                                      }
+                                    }
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            Column(
+              children: [
+                Divider(
+                  color: AppColor.blue,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(Colors.red),
+                        foregroundColor: WidgetStatePropertyAll(Colors.white),
+                      ),
+                      onPressed: () async {
+                        Get.back();
+                      },
+                      child: Text('Đóng'),
+                    ),
+                    usersController.user.value.role == 'teacher'
+                        ? Row(
+                            children: [
+                              SizedBox(
+                                width: 64,
+                              ),
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                  backgroundColor:
+                                      WidgetStatePropertyAll(AppColor.blue),
+                                  foregroundColor:
+                                      WidgetStatePropertyAll(Colors.white),
+                                ),
+                                onPressed: () async {
+                                  if (formKey.currentState!.validate()) {
+                                    if (questionType.value.id == '') {
+                                      await showAlertDialog(
+                                          context,
+                                          DialogType.error,
+                                          'Vui lòng chọn loại câu hỏi',
+                                          '');
+                                      return;
+                                    }
+                                    if (listOption.value
+                                        .where((ele) => ele.value.is_correct)
+                                        .isEmpty) {
+                                      await showAlertDialog(
+                                          context,
+                                          DialogType.error,
+                                          'Vui lòng chọn lựa chọn đúng',
+                                          '');
+                                      return;
+                                    }
+
+                                    questionController.question.value.content =
+                                        contenController.text;
+                                    questionController.question.value.mean =
+                                        meanContentController.text;
+                                    questionController
+                                            .question.value.question_type_id =
+                                        questionType.value.id;
+                                    questionController.question.value.topic_id =
+                                        Get.find<TopicController>()
+                                            .topic
+                                            .value
+                                            .id;
+                                    questionController.question.value
+                                        .update_at = Timestamp.now();
+                                    questionController.loading.value = true;
+                                    Get.back();
+                                    if (questionController.question.value.id ==
+                                        '') {
+                                      // create
+
+                                      await questionController.createQuestion(
+                                          questionController.question.value,
+                                          questionType.value.num_option == 1
+                                              ? [listOption.value.first.value]
+                                              : listOption.value
+                                                  .map((ele) => ele.value)
+                                                  .toList());
+                                    } else {
+                                      // update
+                                      await questionController.updateQuestion(
+                                          questionController.question.value,
+                                          questionType.value.num_option == 1
+                                              ? [listOption.value.first.value]
+                                              : listOption.value
+                                                  .map((ele) => ele.value)
+                                                  .toList());
+                                    }
+                                    await questionController.loadQuestionData();
+                                    questionController.loading.value = false;
+                                  }
+                                },
+                                child: Text('Xác nhận'),
+                              ),
+                              // questionController.question.value.id == '' ||
+                              //         questionController.question.value.active
+                              //     ? SizedBox()
+                              //     : SizedBox(
+                              //         width: 64,
+                              //       ),
+                              // ElevatedButton(
+                              //   style: ButtonStyle(
+                              //     backgroundColor:
+                              //         WidgetStatePropertyAll(Colors.red),
+                              //     foregroundColor:
+                              //         WidgetStatePropertyAll(Colors.white),
+                              //   ),
+                              //   onPressed: () async {
+                              //     await showComfirmDialog(
+                              //       context,
+                              //       'desc',
+                              //       'Bạn có muốn xóa câu hỏi này không?',
+                              //       () async {
+                              //         Get.back();
+                              //         await questionController.deletedQuestion(
+                              //           questionController.question.value,
+                              //         );
+                              //       },
+                              //     );
+                              //   },
+                              //   child: Text('Xóa câu hỏi'),
+                              // ),
+                            ],
+                          )
+                        : SizedBox(),
+                    usersController.user.value.role == 'admin'
+                        ? Row(
+                            children: [
+                              SizedBox(
+                                width: 64,
+                              ),
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                  backgroundColor:
+                                      WidgetStatePropertyAll(AppColor.warm),
+                                  foregroundColor:
+                                      WidgetStatePropertyAll(Colors.white),
+                                ),
+                                onPressed: () async {
+                                  Get.back();
+                                  await questionController.updateStatusQuestion(
+                                      questionController.question.value);
+                                },
+                                child: Text(
+                                    questionController.question.value.active
+                                        ? 'Chờ duyệt'
+                                        : 'Duyệt'),
+                              ),
+                            ],
+                          )
+                        : SizedBox(),
+                  ],
+                ),
+              ],
+            )
+          ],
+        );
+      }),
     );
   }
 }

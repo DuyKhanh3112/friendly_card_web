@@ -26,6 +26,7 @@ class QuestionController extends GetxController {
   RxList<QuestionType> listQuestionType = <QuestionType>[].obs;
   RxList<Question> listQuestion = <Question>[].obs;
   RxList<Option> listOption = <Option>[].obs;
+  Rx<Question> question = Question.initQuestion().obs;
 
   Future<void> loadQuestionData() async {
     loading.value = true;
@@ -76,7 +77,7 @@ class QuestionController extends GetxController {
     // loading.value = false;
   }
 
-  Future<void> createQuestion(
+  Future<void> createQuestionGenerate(
       Question item, List<dynamic> options, String answer) async {
     loading.value = true;
     WriteBatch batch = FirebaseFirestore.instance.batch();
@@ -116,6 +117,44 @@ class QuestionController extends GetxController {
     // loading.value = false;
   }
 
+  Future<void> createQuestion(Question item, List<Option> options) async {
+    loading.value = true;
+    WriteBatch batch = FirebaseFirestore.instance.batch();
+    QuestionType.initQuestionType();
+    String id = questionCollection.doc().id;
+    DocumentReference questRef = questionCollection.doc(id);
+    item.update_at = Timestamp.now();
+    batch.set(questRef, item.toVal());
+
+    await batch.commit();
+    for (var opt in options) {
+      opt.question_id = id;
+      opt.update_at = Timestamp.now();
+      await createOption(opt);
+    }
+  }
+
+  Future<void> updateQuestion(Question item, List<Option> options) async {
+    loading.value = true;
+    item.update_at = Timestamp.now();
+    await questionCollection.doc(item.id).update(item.toVal());
+    for (var opt in listOption.where((opt) => opt.question_id == item.id)) {
+      await deletedOption(opt);
+    }
+    for (var opt in options) {
+      await createOption(opt);
+    }
+  }
+
+  Future<void> updateStatusQuestion(Question item) async {
+    loading.value = true;
+    item.active = !item.active;
+    item.update_at = Timestamp.now();
+    await questionCollection.doc(item.id).update(item.toVal());
+    await loadQuestion();
+    loading.value = false;
+  }
+
   Future<void> createOption(Option item) async {
     loading.value = true;
     WriteBatch batch = FirebaseFirestore.instance.batch();
@@ -125,6 +164,21 @@ class QuestionController extends GetxController {
     batch.set(questRef, item.toVal());
     await batch.commit();
     // loading.value = false;
+  }
+
+  Future<void> deletedOption(Option item) async {
+    await optionCollection.doc(item.id).delete();
+  }
+
+  Future<void> deletedQuestion(Question item) async {
+    loading.value = true;
+    await questionCollection.doc(item.id).delete();
+    for (var opt
+        in listOption.value.where((opt) => opt.question_id == item.id)) {
+      await deletedOption(opt);
+    }
+    await loadQuestion();
+    loading.value = false;
   }
 
   Future<void> generateQuestion() async {
@@ -178,7 +232,7 @@ class QuestionController extends GetxController {
               update_at: Timestamp.now(),
               active: false,
             );
-            await createQuestion(
+            await createQuestionGenerate(
                 quest, item['options'], item['result'].toString());
           });
         }
