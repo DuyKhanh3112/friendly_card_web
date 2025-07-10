@@ -29,21 +29,25 @@ class CloudinaryController {
 
   Future<String> uploadImage(
       base64Image, String fileName, String folderName) async {
-    if (base64Image != '') {
-      final response = await cloudinary.upload(
-        file: 'data:image/png;base64,$base64Image',
-        fileBytes: base64Decode(base64Image),
-        folder: folderName,
-        fileName: fileName,
-        progressCallback: (count, total) {},
-      );
-      if (response.isSuccessful) {
-        return response.secureUrl ?? '';
-      } else {
-        return 'https://res.cloudinary.com/drir6xyuq/image/upload/v1749203203/logo_icon.png';
+    try {
+      if (base64Image != '') {
+        final response = await cloudinary.upload(
+          file: 'data:image/png;base64,$base64Image',
+          fileBytes: base64Decode(base64Image),
+          folder: folderName,
+          fileName: fileName,
+          progressCallback: (count, total) {},
+        );
+        if (response.isSuccessful) {
+          return response.secureUrl ?? '';
+        } else {
+          return 'https://res.cloudinary.com/drir6xyuq/image/upload/v1749203203/logo_icon.png';
+        }
       }
+      return 'https://res.cloudinary.com/drir6xyuq/image/upload/v1749203203/logo_icon.png';
+    } catch (e) {
+      return 'https://res.cloudinary.com/drir6xyuq/image/upload/v1749203203/logo_icon.png';
     }
-    return 'https://res.cloudinary.com/drir6xyuq/image/upload/v1749203203/logo_icon.png';
   }
 
   Future<void> deleteImage(String id, String folder) async {

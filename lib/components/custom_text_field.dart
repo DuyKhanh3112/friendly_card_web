@@ -18,6 +18,8 @@ class CustomTextField extends StatelessWidget {
     this.type,
     this.hint,
     this.widthPrefix,
+    this.multiLines,
+    this.bgColor,
   });
 
   final String label;
@@ -26,9 +28,11 @@ class CustomTextField extends StatelessWidget {
   final bool? required;
   final bool? readOnly;
   final bool? isPassword;
+  final bool? multiLines;
   final void Function(String)? onChanged;
   final ContactType? type;
   final double? widthPrefix;
+  final Color? bgColor;
 
   @override
   Widget build(BuildContext context) {
@@ -44,8 +48,11 @@ class CustomTextField extends StatelessWidget {
             fontSize: 18,
             color: AppColor.blue,
             fontWeight: FontWeight.bold,
+            backgroundColor: bgColor,
           ),
           obscureText: hideContent.value,
+          maxLines: multiLines == true ? 3 : 1,
+          minLines: 1,
           decoration: InputDecoration(
             errorMaxLines: 2,
             hint: Text(

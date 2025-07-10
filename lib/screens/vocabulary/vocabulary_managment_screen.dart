@@ -1,8 +1,11 @@
-// ignore_for_file: invalid_use_of_protected_member, avoid_unnecessary_containers, sized_box_for_whitespace, deprecated_member_use, sort_child_properties_last
+// ignore_for_file: invalid_use_of_protected_member, avoid_unnecessary_containers, sized_box_for_whitespace, deprecated_member_use, sort_child_properties_last, prefer_const_constructors
+
+import 'dart:convert';
 
 import 'package:flexible_grid_view/flexible_grid_view.dart';
 import 'package:flutter/material.dart';
 import 'package:friendly_card_web/components/custom_button.dart';
+import 'package:friendly_card_web/components/custom_text_field.dart';
 import 'package:friendly_card_web/controllers/topic_controller.dart';
 import 'package:friendly_card_web/controllers/users_controller.dart';
 import 'package:friendly_card_web/controllers/vocabulary_controller.dart';
@@ -10,6 +13,7 @@ import 'package:friendly_card_web/models/vocabulary.dart';
 import 'package:friendly_card_web/utils/app_color.dart';
 import 'package:friendly_card_web/widget/loading_page.dart';
 import 'package:get/get.dart';
+import 'package:image_picker_web/image_picker_web.dart';
 
 class VocabularyManagmentScreen extends StatelessWidget {
   const VocabularyManagmentScreen({super.key});
@@ -19,6 +23,7 @@ class VocabularyManagmentScreen extends StatelessWidget {
     VocabularyController vocabularyController =
         Get.find<VocabularyController>();
     TopicController topicController = Get.find<TopicController>();
+    UsersController usersController = Get.find<UsersController>();
 
     RxInt currentPage = 1.obs;
     return Obx(() {
@@ -40,9 +45,6 @@ class VocabularyManagmentScreen extends StatelessWidget {
                   ),
                 ),
                 body: Container(
-                  // padding: EdgeInsets.symmetric(
-                  //   horizontal: Get.width * 0.025,
-                  // ),
                   child: Column(
                     children: [
                       Container(
@@ -51,50 +53,83 @@ class VocabularyManagmentScreen extends StatelessWidget {
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              width: Get.width * 0.4,
-                            ),
-                            Container(
-                              width: Get.width * 0.05,
-                              child: IconButton(
-                                onPressed: () async {
-                                  await vocabularyController
-                                      .loadVocabularyTopic();
-                                },
-                                icon: Icon(
-                                  Icons.refresh,
-                                  color: AppColor.lightBlue,
-                                ),
-                                style: ButtonStyle(
-                                  backgroundColor:
-                                      MaterialStateProperty.all<Color>(
-                                          AppColor.blue),
-                                ),
-                              ),
-                            ),
-                            Container(
-                              width: Get.width * 0.2,
-                              decoration: const BoxDecoration(),
-                              child: CustomButton(
-                                title: 'Thêm từ vựng',
-                                bgColor: AppColor.blue,
-                                onClicked: () async {},
-                              ),
-                            ),
-                            Container(
-                              width: Get.width * 0.2,
-                              decoration: const BoxDecoration(),
-                              child: CustomButton(
-                                title: 'Tạo từ vựng tự động',
-                                bgColor: AppColor.blue,
-                                onClicked: () async {
-                                  await vocabularyController
-                                      .generateVocabulary();
-                                },
-                              ),
-                            ),
-                          ],
+                          children: usersController.user.value.role == 'teacher'
+                              ? [
+                                  Container(
+                                    width: Get.width * 0.4,
+                                  ),
+                                  Container(
+                                    width: Get.width * 0.05,
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: Get.height * 0.02),
+                                    child: IconButton(
+                                      onPressed: () async {
+                                        await vocabularyController
+                                            .loadVocabularyTopic();
+                                      },
+                                      icon: Icon(
+                                        Icons.refresh,
+                                        color: AppColor.lightBlue,
+                                      ),
+                                      style: ButtonStyle(
+                                        backgroundColor:
+                                            MaterialStateProperty.all<Color>(
+                                                AppColor.blue),
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    width: Get.width * 0.2,
+                                    decoration: const BoxDecoration(),
+                                    child: CustomButton(
+                                      title: 'Thêm từ vựng',
+                                      bgColor: AppColor.blue,
+                                      onClicked: () async {
+                                        vocabularyController.vocabulary.value =
+                                            Vocabulary.initVocabulary();
+                                        await formVocabulary();
+                                      },
+                                    ),
+                                  ),
+                                  Container(
+                                    width: Get.width * 0.2,
+                                    decoration: const BoxDecoration(),
+                                    child: CustomButton(
+                                      title: 'Tạo từ vựng tự động',
+                                      bgColor: AppColor.blue,
+                                      onClicked: () async {
+                                        await vocabularyController
+                                            .generateVocabulary();
+                                      },
+                                    ),
+                                  ),
+                                ]
+                              : [
+                                  Container(
+                                    width: Get.width * 0.4,
+                                  ),
+                                  Container(
+                                    width: Get.width * 0.05,
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: Get.height * 0.02,
+                                    ),
+                                    child: IconButton(
+                                      onPressed: () async {
+                                        await vocabularyController
+                                            .loadVocabularyTopic();
+                                      },
+                                      icon: Icon(
+                                        Icons.refresh,
+                                        color: AppColor.lightBlue,
+                                      ),
+                                      style: ButtonStyle(
+                                        backgroundColor:
+                                            MaterialStateProperty.all<Color>(
+                                                AppColor.blue),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                         ),
                       ),
                       Container(
@@ -162,6 +197,316 @@ class VocabularyManagmentScreen extends StatelessWidget {
     });
   }
 
+  Future<void> formVocabulary() async {
+    VocabularyController vocabularyController =
+        Get.find<VocabularyController>();
+    TopicController topicController = Get.find<TopicController>();
+    UsersController usersController = Get.find<UsersController>();
+    final formKey = GlobalKey<FormState>();
+
+    RxString imgBase64 = ''.obs;
+    RxString imgUrl = vocabularyController.vocabulary.value.image.obs;
+
+    TextEditingController nameController =
+        TextEditingController(text: vocabularyController.vocabulary.value.name);
+    TextEditingController meanController =
+        TextEditingController(text: vocabularyController.vocabulary.value.mean);
+    TextEditingController transcriptionController = TextEditingController(
+        text: vocabularyController.vocabulary.value.transcription);
+    TextEditingController exampleController = TextEditingController(
+        text: vocabularyController.vocabulary.value.example);
+    TextEditingController meanExampleController = TextEditingController(
+        text: vocabularyController.vocabulary.value.mean_example);
+    await Get.dialog(
+      Obx(
+        () => AlertDialog(
+          titlePadding: EdgeInsets.symmetric(
+            horizontal: Get.width * 0.025,
+            vertical: Get.width * 0.01,
+          ),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: Get.width * 0.025,
+            // vertical: Get.width * 0.01,
+          ),
+          buttonPadding: EdgeInsets.symmetric(
+            horizontal: Get.width * 0.025,
+            vertical: Get.width * 0.01,
+          ),
+          actionsPadding: EdgeInsets.symmetric(
+            horizontal: Get.width * 0.025,
+            vertical: Get.width * 0.01,
+          ),
+          title: Column(
+            children: [
+              Text(
+                'Thông tin từ vựng',
+                style: TextStyle(
+                  fontSize: 28,
+                  color: AppColor.blue,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Divider(
+                color: AppColor.blue,
+              ),
+            ],
+          ),
+          content: Container(
+            width: Get.width * 0.5,
+            // height: Get.height * 0.3,
+            child: Form(
+              key: formKey,
+              child: ListView(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: Get.width * 0.3,
+                        child: Column(
+                          children: [
+                            CustomTextField(
+                              label: 'Tên từ vựng',
+                              controller: nameController,
+                              required: true,
+                              readOnly:
+                                  usersController.user.value.role != 'teacher',
+                            ),
+                            CustomTextField(
+                              label: 'Nghĩa từ vựng',
+                              controller: meanController,
+                              required: true,
+                              readOnly:
+                                  usersController.user.value.role != 'teacher',
+                            ),
+                            CustomTextField(
+                              label: 'Phiên âm',
+                              controller: transcriptionController,
+                              required: true,
+                              readOnly:
+                                  usersController.user.value.role != 'teacher',
+                            ),
+                            CustomTextField(
+                              label: 'Chủ đề',
+                              controller: TextEditingController(
+                                  text: topicController.topic.value.name),
+                              // required: true,
+                              readOnly: true,
+                            ),
+                            CustomTextField(
+                              label: 'Ví dụ',
+                              controller: exampleController,
+                              multiLines: true,
+                              required: true,
+                              readOnly:
+                                  usersController.user.value.role != 'teacher',
+                            ),
+                            CustomTextField(
+                              label: 'Nghĩa ví dụ',
+                              multiLines: true,
+                              controller: meanExampleController,
+                              required: true,
+                              readOnly:
+                                  usersController.user.value.role != 'teacher',
+                            ),
+                          ],
+                        ),
+                      ),
+                      InkWell(
+                        onTap: usersController.user.value.role != 'teacher'
+                            ? null
+                            : () async {
+                                var result =
+                                    await ImagePickerWeb.getImageAsBytes();
+                                if (result != null) {
+                                  imgBase64.value = base64Encode(result);
+                                }
+                              },
+                        child: Column(
+                          children: [
+                            Container(
+                              height: Get.height * 0.25,
+                              width: Get.height * 0.25,
+                              padding: EdgeInsets.all(12),
+                              margin: EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                // border: Border.all(),
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(32),
+                                ),
+                                image: vocabularyController
+                                            .vocabulary.value.id ==
+                                        ''
+                                    ? imgBase64.value == ''
+                                        ? null
+                                        : DecorationImage(
+                                            image: MemoryImage(
+                                                base64Decode(imgBase64.value)),
+                                            fit: BoxFit.cover,
+                                          )
+                                    : imgBase64.value == ''
+                                        ? imgUrl.value == ''
+                                            ? null
+                                            : DecorationImage(
+                                                image:
+                                                    NetworkImage(imgUrl.value),
+                                                fit: BoxFit.cover,
+                                              )
+                                        : DecorationImage(
+                                            image: MemoryImage(
+                                                base64Decode(imgBase64.value)),
+                                            fit: BoxFit.cover,
+                                          ),
+                                color: Colors.white,
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Colors.black26,
+                                    blurRadius: 10,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              alignment: Alignment.center,
+                            ),
+                            // usersController.user.value.role == 'teacher'
+                            //     ?
+                            Text(
+                              'Nhấn vào đây để thay đổi ảnh từ vựng.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontStyle: FontStyle.italic,
+                                color: AppColor.labelBlue,
+                              ),
+                            )
+                            // : SizedBox(),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            Column(
+              children: [
+                Divider(
+                  color: AppColor.blue,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(Colors.red),
+                        foregroundColor: WidgetStatePropertyAll(Colors.white),
+                      ),
+                      onPressed: () {
+                        Get.back();
+                      },
+                      child: Text('Đóng'),
+                    ),
+                    usersController.user.value.role == 'teacher'
+                        ? Row(
+                            children: [
+                              SizedBox(
+                                width: 64,
+                              ),
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                  backgroundColor:
+                                      WidgetStatePropertyAll(AppColor.blue),
+                                  foregroundColor:
+                                      WidgetStatePropertyAll(Colors.white),
+                                ),
+                                onPressed: () async {
+                                  if (formKey.currentState!.validate()) {
+                                    if (vocabularyController
+                                            .vocabulary.value.id ==
+                                        '') {
+                                      Vocabulary voca =
+                                          Vocabulary.initVocabulary();
+                                      voca.name = nameController.text;
+                                      voca.mean = meanController.text;
+                                      voca.transcription =
+                                          transcriptionController.text;
+                                      voca.example = exampleController.text;
+                                      voca.mean_example =
+                                          meanExampleController.text;
+                                      voca.topic_id =
+                                          topicController.topic.value.id;
+                                      Get.back();
+                                      await vocabularyController
+                                          .createVocabulary(
+                                              voca, imgBase64.value);
+                                      await vocabularyController
+                                          .loadVocabularyTopic();
+                                    } else {
+                                      vocabularyController.vocabulary.value
+                                          .name = nameController.text;
+                                      vocabularyController.vocabulary.value
+                                          .mean = meanController.text;
+                                      vocabularyController
+                                              .vocabulary.value.transcription =
+                                          transcriptionController.text;
+                                      vocabularyController.vocabulary.value
+                                          .example = exampleController.text;
+                                      vocabularyController
+                                              .vocabulary.value.mean_example =
+                                          meanExampleController.text;
+                                      Get.back();
+                                      await vocabularyController
+                                          .updateVocabulary(imgBase64.value);
+                                    }
+                                    vocabularyController.vocabulary.value =
+                                        Vocabulary.initVocabulary();
+                                  }
+                                },
+                                child: Text('Xác nhận'),
+                              ),
+                            ],
+                          )
+                        : SizedBox(),
+                    usersController.user.value.role == 'admin'
+                        ? Row(
+                            children: [
+                              SizedBox(
+                                width: 64,
+                              ),
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                  backgroundColor:
+                                      WidgetStatePropertyAll(AppColor.warm),
+                                  foregroundColor:
+                                      WidgetStatePropertyAll(Colors.white),
+                                ),
+                                onPressed: () async {
+                                  await vocabularyController
+                                      .updateStatusVocabulary(
+                                          vocabularyController
+                                              .vocabulary.value);
+                                },
+                                child: Text(
+                                    vocabularyController.vocabulary.value.active
+                                        ? 'Chờ duyệt'
+                                        : 'Duyệt'),
+                              ),
+                            ],
+                          )
+                        : SizedBox(),
+                  ],
+                ),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget vocabularyItem(Vocabulary item) {
     UsersController usersController = Get.find<UsersController>();
     VocabularyController vocabularyController =
@@ -169,94 +514,100 @@ class VocabularyManagmentScreen extends StatelessWidget {
     return Stack(
       alignment: Alignment.topRight,
       children: [
-        Container(
-          // width: Get.width * 0.8,
-          margin: EdgeInsets.symmetric(
-            vertical: Get.height * 0.02,
-            horizontal: Get.width * 0.02,
-          ),
-          padding: EdgeInsets.symmetric(
-            vertical: Get.height * 0.02,
-            horizontal: Get.width * 0.01,
-          ),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.all(
-              Radius.circular(32),
+        InkWell(
+          onTap: () async {
+            vocabularyController.vocabulary.value = item;
+            await formVocabulary();
+          },
+          child: Container(
+            // width: Get.width * 0.8,
+            margin: EdgeInsets.symmetric(
+              vertical: Get.height * 0.02,
+              horizontal: Get.width * 0.02,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 10,
-                offset: Offset(0, 4),
+            padding: EdgeInsets.symmetric(
+              vertical: Get.height * 0.02,
+              horizontal: Get.width * 0.01,
+            ),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.all(
+                Radius.circular(32),
               ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                width: Get.width * 0.1,
-                height: Get.width * 0.1,
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.all(Radius.circular(18)),
-                  image: DecorationImage(
-                    image: NetworkImage(item.image == ''
-                        ? 'https://res.cloudinary.com/drir6xyuq/image/upload/v1749203203/logo_icon.png'
-                        : item.image),
-                    fit: BoxFit.cover,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: Get.width * 0.1,
+                  height: Get.width * 0.1,
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.all(Radius.circular(18)),
+                    image: DecorationImage(
+                      image: NetworkImage(item.image == ''
+                          ? 'https://res.cloudinary.com/drir6xyuq/image/upload/v1749203203/logo_icon.png'
+                          : item.image),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
-              ),
-              Container(
-                alignment: Alignment.topLeft,
-                width: Get.width * 0.3,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${item.name} (${item.transcription})',
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                        fontSize: 24,
-                        color: AppColor.blue,
-                        fontWeight: FontWeight.bold,
+                Container(
+                  alignment: Alignment.topLeft,
+                  width: Get.width * 0.3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${item.name} (${item.transcription})',
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          fontSize: 24,
+                          color: AppColor.blue,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    Divider(
-                      color: AppColor.blue,
-                    ),
-                    Text(
-                      'Nghĩa: ${item.mean}',
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                        fontSize: 18,
+                      Divider(
                         color: AppColor.blue,
                       ),
-                    ),
-                    Text(
-                      item.example,
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: AppColor.blue,
-                        overflow: TextOverflow.ellipsis,
+                      Text(
+                        'Nghĩa: ${item.mean}',
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: AppColor.blue,
+                        ),
                       ),
-                    ),
-                    Text(
-                      '(${item.mean_example})',
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: AppColor.blue,
-                        fontStyle: FontStyle.italic,
+                      Text(
+                        item.example,
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: AppColor.blue,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                  ],
+                      Text(
+                        '(${item.mean_example})',
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: AppColor.blue,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         Container(
@@ -290,7 +641,7 @@ class VocabularyManagmentScreen extends StatelessWidget {
                                   titleTextStyle: TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
-                                  title: Text('Khóa'),
+                                  title: Text('Chờ duyệt'),
                                 ),
                               )
                             : PopupMenuItem(
@@ -304,7 +655,7 @@ class VocabularyManagmentScreen extends StatelessWidget {
                                   titleTextStyle: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
-                                  title: const Text('Kích hoạt'),
+                                  title: const Text('Duyệt'),
                                 ),
                               ),
                       ],
@@ -312,45 +663,6 @@ class VocabularyManagmentScreen extends StatelessWidget {
               // await topicController.updateTopicStatus(item);
               await vocabularyController.updateStatusVocabulary(item);
             },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget boldMainText(String example, String text) {
-    List<String> parts = example.split(text.toLowerCase());
-    String before = example;
-    String after = '';
-    if (parts.length >= 2) {
-      before = parts[0];
-      after = parts[1];
-    }
-    return Row(
-      children: [
-        Text(
-          before,
-          textAlign: TextAlign.left,
-          style: TextStyle(
-            fontSize: 18,
-            color: AppColor.blue,
-          ),
-        ),
-        Text(
-          text,
-          textAlign: TextAlign.left,
-          style: TextStyle(
-            fontSize: 18,
-            color: AppColor.blue,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          after,
-          textAlign: TextAlign.left,
-          style: TextStyle(
-            fontSize: 18,
-            color: AppColor.blue,
           ),
         ),
       ],

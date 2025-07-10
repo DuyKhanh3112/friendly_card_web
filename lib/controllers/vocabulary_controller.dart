@@ -4,9 +4,10 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:friendly_card_web/config.dart';
+import 'package:friendly_card_web/controllers/cloudinary_controller.dart';
 import 'package:friendly_card_web/controllers/topic_controller.dart';
-import 'package:friendly_card_web/controllers/users_controller.dart';
 import 'package:friendly_card_web/models/vocabulary.dart';
+import 'package:friendly_card_web/utils/tool.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
@@ -17,6 +18,7 @@ class VocabularyController extends GetxController {
       FirebaseFirestore.instance.collection('vocabulary');
 
   RxList<Vocabulary> listVocabulary = <Vocabulary>[].obs;
+  Rx<Vocabulary> vocabulary = Vocabulary.initVocabulary().obs;
 
   Future<void> loadVocabularyTopic() async {
     loading.value = true;
@@ -33,23 +35,28 @@ class VocabularyController extends GetxController {
     loading.value = false;
   }
 
-  Future<void> createVocabulary(Vocabulary item) async {
+  Future<void> createVocabulary(Vocabulary item, String imgBase64) async {
     loading.value = true;
     WriteBatch batch = FirebaseFirestore.instance.batch();
 
     String id = vocabularyCollection.doc().id;
+    if (imgBase64 != '') {
+      String imgUrl = await CloudinaryController()
+          .uploadImage(imgBase64, id, 'topic/${item.topic_id}/vocabulary');
+      item.image = imgUrl;
+    }
     DocumentReference vocaRef = vocabularyCollection.doc(id);
     item.update_at = Timestamp.now();
     batch.set(vocaRef, item.toVal());
 
     await batch.commit();
+    // await loadVocabularyTopic();
     loading.value = false;
   }
 
   Future<void> generateVocabulary() async {
     loading.value = true;
     TopicController topicController = Get.find<TopicController>();
-    UsersController usersController = Get.find<UsersController>();
     final url = Uri.parse(
         'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent');
 
@@ -82,19 +89,18 @@ class VocabularyController extends GetxController {
         final dataRes = json.decode(response.body);
         final data =
             dataRes['candidates'][0]['content']['parts'][0]['text'].toString();
-        final vocabList = parseVocabularyList(data);
+        final vocabList = Tool.parseList(data);
 
         vocabList.forEach((item) async {
           item['id'] = '';
           item['name'] = item['vocabulary'];
-          item['user_id'] = usersController.user.value.id;
           item['topic_id'] = topicController.topic.value.id;
           item['active'] = false;
           item['update_at'] = Timestamp.now();
           item['image'] =
               'https://res.cloudinary.com/drir6xyuq/image/upload/v1749203203/logo_icon.png';
 
-          await createVocabulary(Vocabulary.fromJson(item));
+          await createVocabulary(Vocabulary.fromJson(item), '');
         });
       }
       await loadVocabularyTopic();
@@ -104,50 +110,26 @@ class VocabularyController extends GetxController {
     }
   }
 
-  String extractJsonArray(String input) {
-    final regex = RegExp(r'```json\s*(\[.*?\])\s*```', dotAll: true);
-    final match = regex.firstMatch(input);
-    if (match != null) {
-      return match.group(1)!;
-    }
-    return '[]';
-  }
-
-  List<Map<String, dynamic>> parseVocabularyList(String rawText) {
-    final jsonArrayString = extractJsonArray(rawText);
-    final parsed = json.decode(jsonArrayString);
-    return List<Map<String, dynamic>>.from(parsed);
-  }
-
-  Future<String> getImages(String key, String topic) async {
-    final Uri uri = Uri.https('api.pexels.com', '/v1/search', {
-      'query': 'Looking for pictures cute of $key with $topic themes',
-      'per_page': '1', // Lấy 1 ảnh đầu tiên
-    });
-
-    try {
-      final response = await http.get(
-        uri,
-        headers: {
-          'Authorization': Config.API_KEY_PEXELS,
-          'Content-Type': 'application/json',
-        },
-      );
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['photos'][0]['src']['original'];
-      }
-      return '';
-    } catch (e) {
-      return '';
-    }
-  }
-
   Future<void> updateStatusVocabulary(Vocabulary item) async {
     loading.value = true;
     item.update_at = Timestamp.now();
     item.active = !item.active;
     await vocabularyCollection.doc(item.id).update(item.toVal());
+    await loadVocabularyTopic();
+    loading.value = false;
+  }
+
+  Future<void> updateVocabulary(String imgBase64) async {
+    loading.value = true;
+    if (imgBase64 != '') {
+      String imgUrl = await CloudinaryController().uploadImage(imgBase64,
+          vocabulary.value.id, 'topic/${vocabulary.value.topic_id}/vocabulary');
+      vocabulary.value.image = imgUrl;
+    }
+    vocabulary.value.update_at = Timestamp.now();
+    await vocabularyCollection
+        .doc(vocabulary.value.id)
+        .update(vocabulary.value.toVal());
     await loadVocabularyTopic();
     loading.value = false;
   }

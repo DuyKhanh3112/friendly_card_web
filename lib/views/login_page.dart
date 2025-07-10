@@ -173,7 +173,7 @@ class LoginPage extends StatelessWidget {
                                         onPressed: () {
                                           Get.back();
                                         },
-                                        child: Text('Hủy'),
+                                        child: Text('Đóng'),
                                       ),
                                       ElevatedButton(
                                         style: ButtonStyle(
