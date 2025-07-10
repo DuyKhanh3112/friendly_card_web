@@ -83,7 +83,12 @@ class TopicManagmentScreen extends StatelessWidget {
                               onPressed: () async {
                                 topicController.loading.value = true;
                                 searchController.value.clear();
-                                await topicController.loadTopicTeacher();
+                                if (usersController.user.value.role ==
+                                    'admin') {
+                                  await topicController.loadAllTopic();
+                                } else {
+                                  await topicController.loadTopicTeacher();
+                                }
                                 loadData(listTopic, searchController);
                                 topicController.loading.value = false;
                               },
