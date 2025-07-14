@@ -106,7 +106,7 @@ class AdminPage extends StatelessWidget {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              Icon(Icons.arrow_drop_down_outlined)
+                              const Icon(Icons.arrow_drop_down_outlined)
                             ],
                           ),
                           iconColor: Colors.white,
