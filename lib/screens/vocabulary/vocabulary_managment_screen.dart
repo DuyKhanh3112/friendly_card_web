@@ -26,7 +26,7 @@ class VocabularyManagmentScreen extends StatelessWidget {
     TopicController topicController = Get.find<TopicController>();
     UsersController usersController = Get.find<UsersController>();
 
-    RxInt currentPage = 1.obs;
+    RxInt currentPage = 0.obs;
     return Obx(() {
       return vocabularyController.loading.value
           ? const LoadingPage()
@@ -54,7 +54,7 @@ class VocabularyManagmentScreen extends StatelessWidget {
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: usersController.user.value.role == ''
+                          children: usersController.user.value.role == 'teacher'
                               ? [
                                   Container(
                                     width: Get.width * 0.4,
@@ -99,9 +99,116 @@ class VocabularyManagmentScreen extends StatelessWidget {
                                       title: 'Tạo từ vựng tự động',
                                       bgColor: AppColor.blue,
                                       onClicked: () async {
-                                        // await vocabularyController
-                                        //     .generateVocabulary();
                                         final formKey = GlobalKey<FormState>();
+                                        TextEditingController numController =
+                                            TextEditingController(text: '5');
+                                        await Get.dialog(
+                                          AlertDialog(
+                                            titlePadding: EdgeInsets.symmetric(
+                                              horizontal: Get.width * 0.025,
+                                              vertical: Get.width * 0.01,
+                                            ),
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                              horizontal: Get.width * 0.025,
+                                              // vertical: Get.width * 0.01,
+                                            ),
+                                            buttonPadding: EdgeInsets.symmetric(
+                                              horizontal: Get.width * 0.025,
+                                              vertical: Get.width * 0.01,
+                                            ),
+                                            actionsPadding:
+                                                EdgeInsets.symmetric(
+                                              horizontal: Get.width * 0.025,
+                                              vertical: Get.width * 0.01,
+                                            ),
+                                            title: Column(
+                                              children: [
+                                                Text(
+                                                  'Số từ vựng tạo tự động',
+                                                  style: TextStyle(
+                                                    fontSize: 28,
+                                                    color: AppColor.blue,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                Divider(
+                                                  color: AppColor.blue,
+                                                ),
+                                              ],
+                                            ),
+                                            content: Container(
+                                              // width: Get.width * 0.5,
+                                              // height: Get.height * 0.3,
+                                              child: Form(
+                                                key: formKey,
+                                                child: CustomTextField(
+                                                  controller: numController,
+                                                  label: 'Số từ vựng',
+                                                  required: true,
+                                                  type: ContactType.number,
+                                                ),
+                                              ),
+                                            ),
+                                            actions: [
+                                              Column(
+                                                children: [
+                                                  Divider(
+                                                    color: AppColor.blue,
+                                                  ),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      ElevatedButton(
+                                                        style: ButtonStyle(
+                                                          backgroundColor:
+                                                              WidgetStatePropertyAll(
+                                                                  Colors.red),
+                                                          foregroundColor:
+                                                              WidgetStatePropertyAll(
+                                                                  Colors.white),
+                                                        ),
+                                                        onPressed: () {
+                                                          Get.back();
+                                                        },
+                                                        child: Text('Đóng'),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 64,
+                                                      ),
+                                                      ElevatedButton(
+                                                        style: ButtonStyle(
+                                                          backgroundColor:
+                                                              WidgetStatePropertyAll(
+                                                                  AppColor
+                                                                      .blue),
+                                                          foregroundColor:
+                                                              WidgetStatePropertyAll(
+                                                                  Colors.white),
+                                                        ),
+                                                        onPressed: () async {
+                                                          if (formKey
+                                                              .currentState!
+                                                              .validate()) {
+                                                            Get.back();
+                                                            await vocabularyController
+                                                                .generateVocabulary(
+                                                                    int.parse(
+                                                                        numController
+                                                                            .text));
+                                                          }
+                                                        },
+                                                        child: Text('Xác nhận'),
+                                                      ),
+                                                    ],
+                                                  )
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        );
                                       },
                                     ),
                                   ),
@@ -486,7 +593,7 @@ class VocabularyManagmentScreen extends StatelessWidget {
                                           style: ButtonStyle(
                                             backgroundColor:
                                                 WidgetStatePropertyAll(
-                                                    AppColor.warm),
+                                                    stt['color']),
                                             foregroundColor:
                                                 WidgetStatePropertyAll(
                                                     Colors.white),
@@ -499,7 +606,7 @@ class VocabularyManagmentScreen extends StatelessWidget {
                                                         .vocabulary.value,
                                                     stt['value']);
                                           },
-                                          child: stt['label'],
+                                          child: Text(stt['label']),
                                         ),
                                       ],
                                     ))

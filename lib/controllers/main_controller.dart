@@ -7,7 +7,7 @@ import 'package:friendly_card_web/screens/teacher/teacher_managment_screen.dart'
 import 'package:get/get.dart';
 
 class MainController extends GetxController {
-  RxInt numPageAdmin = 2.obs;
+  RxInt numPageAdmin = 1.obs;
   RxInt numPageTeacher = 1.obs;
 
   List<String> titleAdmin = [

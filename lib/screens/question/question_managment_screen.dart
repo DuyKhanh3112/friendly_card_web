@@ -5,7 +5,8 @@ import 'package:flexible_grid_view/flexible_grid_view.dart';
 import 'package:flutter/material.dart';
 import 'package:friendly_card_web/components/custom_button.dart';
 import 'package:friendly_card_web/components/custom_dialog.dart';
-import 'package:friendly_card_web/components/custom_dropdown.dart';
+import 'package:friendly_card_web/components/custom_dropdown.dart'
+    hide ContactType;
 import 'package:friendly_card_web/components/custom_text_field.dart';
 import 'package:friendly_card_web/controllers/question_controller.dart';
 import 'package:friendly_card_web/controllers/topic_controller.dart';
@@ -26,7 +27,7 @@ class QuestionManagementScreen extends StatelessWidget {
     TopicController topicController = Get.find<TopicController>();
     QuestionController questionController = Get.find<QuestionController>();
 
-    RxInt currentPage = 1.obs;
+    RxInt currentPage = 0.obs;
     return Obx(() {
       return questionController.loading.value
           ? const LoadingPage()
@@ -97,7 +98,111 @@ class QuestionManagementScreen extends StatelessWidget {
                                 title: 'Tạo câu hỏi tự động',
                                 bgColor: AppColor.blue,
                                 onClicked: () async {
-                                  await questionController.generateQuestion();
+                                  final formKey = GlobalKey<FormState>();
+                                  TextEditingController numController =
+                                      TextEditingController(text: '5');
+                                  await Get.dialog(
+                                    AlertDialog(
+                                      titlePadding: EdgeInsets.symmetric(
+                                        horizontal: Get.width * 0.025,
+                                        vertical: Get.width * 0.01,
+                                      ),
+                                      contentPadding: EdgeInsets.symmetric(
+                                        horizontal: Get.width * 0.025,
+                                        // vertical: Get.width * 0.01,
+                                      ),
+                                      buttonPadding: EdgeInsets.symmetric(
+                                        horizontal: Get.width * 0.025,
+                                        vertical: Get.width * 0.01,
+                                      ),
+                                      actionsPadding: EdgeInsets.symmetric(
+                                        horizontal: Get.width * 0.025,
+                                        vertical: Get.width * 0.01,
+                                      ),
+                                      title: Column(
+                                        children: [
+                                          Text(
+                                            'Số câu hỏi tạo tự động cho mỗi loại câu hỏi',
+                                            style: TextStyle(
+                                              fontSize: 28,
+                                              color: AppColor.blue,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Divider(
+                                            color: AppColor.blue,
+                                          ),
+                                        ],
+                                      ),
+                                      content: Container(
+                                        // width: Get.width * 0.5,
+                                        // height: Get.height * 0.3,
+                                        child: Form(
+                                          key: formKey,
+                                          child: CustomTextField(
+                                            controller: numController,
+                                            label: 'Số câu hỏi',
+                                            required: true,
+                                            type: ContactType.number,
+                                          ),
+                                        ),
+                                      ),
+                                      actions: [
+                                        Column(
+                                          children: [
+                                            Divider(
+                                              color: AppColor.blue,
+                                            ),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                ElevatedButton(
+                                                  style: ButtonStyle(
+                                                    backgroundColor:
+                                                        WidgetStatePropertyAll(
+                                                            Colors.red),
+                                                    foregroundColor:
+                                                        WidgetStatePropertyAll(
+                                                            Colors.white),
+                                                  ),
+                                                  onPressed: () {
+                                                    Get.back();
+                                                  },
+                                                  child: Text('Đóng'),
+                                                ),
+                                                SizedBox(
+                                                  width: 64,
+                                                ),
+                                                ElevatedButton(
+                                                  style: ButtonStyle(
+                                                    backgroundColor:
+                                                        WidgetStatePropertyAll(
+                                                            AppColor.blue),
+                                                    foregroundColor:
+                                                        WidgetStatePropertyAll(
+                                                            Colors.white),
+                                                  ),
+                                                  onPressed: () async {
+                                                    if (formKey.currentState!
+                                                        .validate()) {
+                                                      Get.back();
+                                                      await questionController
+                                                          .generateQuestion(
+                                                              int.parse(
+                                                                  numController
+                                                                      .text));
+                                                    }
+                                                  },
+                                                  child: Text('Xác nhận'),
+                                                ),
+                                              ],
+                                            )
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  );
                                 },
                               ),
                             ),
@@ -638,7 +743,7 @@ class QuestionManagementScreen extends StatelessWidget {
                                           style: ButtonStyle(
                                             backgroundColor:
                                                 WidgetStatePropertyAll(
-                                                    AppColor.warm),
+                                                    stt['color']),
                                             foregroundColor:
                                                 WidgetStatePropertyAll(
                                                     Colors.white),
@@ -651,7 +756,7 @@ class QuestionManagementScreen extends StatelessWidget {
                                                         .question.value,
                                                     stt['value']);
                                           },
-                                          child: stt['label'],
+                                          child: Text(stt['label']),
                                         ),
                                       ],
                                     ))

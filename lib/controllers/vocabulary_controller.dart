@@ -54,7 +54,7 @@ class VocabularyController extends GetxController {
     loading.value = false;
   }
 
-  Future<void> generateVocabulary() async {
+  Future<void> generateVocabulary(int num) async {
     loading.value = true;
     TopicController topicController = Get.find<TopicController>();
     final url = Uri.parse(
@@ -73,7 +73,7 @@ class VocabularyController extends GetxController {
         {
           "parts": [
             {
-              "text": "Hãy cho tôi ${Config.num_generate} từ vựng tiếng Anh là danh từ, " +
+              "text": "Hãy cho tôi $num từ vựng tiếng Anh là danh từ, " +
                   "với chủ đề ${topicController.topic.value.name == '' ? 'Động vật' : topicController.topic.value.name}," +
                   " trả về gồm: từ vựng tiếng Anh, nghĩa tiếng Việt, ví dụ, nghĩa tiếng Việt của ví dụ và phiên âm. " +
                   "Dạng mảng bao gồm: vocabulary, mean, example, mean_example, transcription. ${names != '' ? "Khác các từ : $names" : ''}"

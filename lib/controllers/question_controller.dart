@@ -181,7 +181,7 @@ class QuestionController extends GetxController {
     loading.value = false;
   }
 
-  Future<void> generateQuestion() async {
+  Future<void> generateQuestion(int num) async {
     loading.value = true;
     TopicController topicController = Get.find<TopicController>();
     VocabularyController vocabularyController =
@@ -209,7 +209,7 @@ class QuestionController extends GetxController {
         "contents": [
           {
             "parts": [
-              {"text": getText(type, topicController, names, question_txt)}
+              {"text": getText(type, topicController, names, question_txt, num)}
             ]
           }
         ]
@@ -247,23 +247,23 @@ class QuestionController extends GetxController {
   }
 
   String getText(QuestionType type, TopicController topicController,
-      String names, String question_txt) {
+      String names, String question_txt, int num) {
     if (type.name == 'Điền khuyết') {
-      return "Hãy cho tôi ${Config.num_generate} câu hỏi bài tập tiếng Anh với dạng câu hỏi là điền khuyết," +
+      return "Hãy cho tôi $num câu hỏi bài tập tiếng Anh với dạng câu hỏi là điền khuyết," +
           " số lựa chọn là ${type.num_option}, số đáp án đúng là 1 " +
           "với chủ đề ${topicController.topic.value.name == '' ? 'Động vật' : topicController.topic.value.name}," +
           " trả về mảng json gồm: câu hỏi, nghĩa câu hỏi, các lựa chọn (dạng mảng), kết quả đúng; " +
           "Dạng mảng bao gồm: question, mean_question, options, result. Đáp án liên quan đến : $names và câu hỏi khác $question_txt";
     }
     if (type.name == 'Dịch nghĩa') {
-      return "Hãy cho tôi ${Config.num_generate} câu hỏi bài tập tiếng Anh dạng dịch nghĩa 1 từ tiếng việt sang tiếng anh hoặc ngược lại," +
+      return "Hãy cho tôi $num câu hỏi bài tập tiếng Anh dạng dịch nghĩa 1 từ tiếng việt sang tiếng anh hoặc ngược lại," +
           " số lựa chọn là ${type.name}, số đáp án đúng là 1 " +
           "với chủ đề ${topicController.topic.value.name == '' ? 'Động vật' : topicController.topic.value.name}," +
           " trả về mảng json gồm: câu hỏi tiếng anh,  nghĩa câu hỏi, các lựa chọn (dạng mảng), kết quả đúng, " +
           "Dạng mảng bao gồm: question, mean_question, options, result. Đáp án liên quan đến : $names và câu hỏi khác $question_txt";
     }
     if (type.name == 'Sắp xếp từ') {
-      return "Hãy cho tôi ${Config.num_generate} câu hỏi bài tập tiếng Anh với dạng câu hỏi là sắp xếp chữ cái," +
+      return "Hãy cho tôi $num câu hỏi bài tập tiếng Anh với dạng câu hỏi là sắp xếp chữ cái," +
           "với chủ đề ${topicController.topic.value.name == '' ? 'Động vật' : topicController.topic.value.name}," +
           " trả về mảng json gồm: câu hỏi , nghĩa câu hỏi, các chữ cái gợi ý (dạng mảng, chữ cái gợi ý sắp xếp lộn lộn), kết quả đúng, nghĩa đáp án. " +
           "Dạng mảng bao gồm:  question, mean_question, options, result. Đáp án liên quan đến : $names và câu hỏi khác $question_txt";

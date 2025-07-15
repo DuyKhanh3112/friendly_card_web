@@ -599,30 +599,40 @@ class TopicManagmentScreen extends StatelessWidget {
                             ],
                           )
                         : SizedBox(),
-                    // usersController.user.value.role == 'admin'
-                    //     ? Row(
-                    //         children: [
-                    //           SizedBox(
-                    //             width: 64,
-                    //           ),
-                    //           ElevatedButton(
-                    //             style: ButtonStyle(
-                    //               backgroundColor:
-                    //                   WidgetStatePropertyAll(AppColor.warm),
-                    //               foregroundColor:
-                    //                   WidgetStatePropertyAll(Colors.white),
-                    //             ),
-                    //             onPressed: () async {
-                    //               await topicController.updateTopicStatus(
-                    //                   topicController.topic.value);
-                    //             },
-                    //             child: Text(topicController.topic.value.active
-                    //                 ? 'Chờ duyệt'
-                    //                 : 'Duyệt'),
-                    //           ),
-                    //         ],
-                    //       )
-                    //     : SizedBox(),
+                    usersController.user.value.role == 'admin'
+                        ? Row(
+                            children: Tool.listStatus
+                                .where((stt) =>
+                                    stt['value'] !=
+                                    topicController.topic.value.status)
+                                .map((stt) => Row(
+                                      children: [
+                                        SizedBox(
+                                          width: 64,
+                                        ),
+                                        ElevatedButton(
+                                          style: ButtonStyle(
+                                            backgroundColor:
+                                                WidgetStatePropertyAll(
+                                                    stt['color']),
+                                            foregroundColor:
+                                                WidgetStatePropertyAll(
+                                                    Colors.white),
+                                          ),
+                                          onPressed: () async {
+                                            Get.back();
+                                            await topicController
+                                                .updateTopicStatus(
+                                                    topicController.topic.value,
+                                                    stt['value']);
+                                          },
+                                          child: Text(stt['label']),
+                                        ),
+                                      ],
+                                    ))
+                                .toList(),
+                          )
+                        : SizedBox(),
                   ],
                 ),
               ],
