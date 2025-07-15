@@ -4,7 +4,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:friendly_card_web/screens/question/question_managment_screen.dart';
-import 'package:friendly_card_web/screens/topic/topic_form_screen.dart';
 import 'package:friendly_card_web/screens/vocabulary/vocabulary_managment_screen.dart';
 import 'package:friendly_card_web/utils/inital_binding.dart';
 import 'package:friendly_card_web/views/admin/admin_page.dart';
@@ -74,10 +73,6 @@ class MyApp extends StatelessWidget {
         GetPage(
           name: '/teacher_form',
           page: () => const TeacherFormScreen(),
-        ),
-        GetPage(
-          name: '/topic_form',
-          page: () => const TopicFormScreen(),
         ),
         GetPage(
           name: '/vocabulary',

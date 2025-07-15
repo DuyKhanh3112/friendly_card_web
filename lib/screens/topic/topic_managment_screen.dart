@@ -19,6 +19,7 @@ import 'package:friendly_card_web/controllers/users_controller.dart';
 import 'package:friendly_card_web/controllers/vocabulary_controller.dart';
 import 'package:friendly_card_web/models/topic.dart';
 import 'package:friendly_card_web/models/vocabulary.dart';
+import 'package:friendly_card_web/utils/tool.dart';
 import 'package:friendly_card_web/widget/empty_data.dart';
 import 'package:friendly_card_web/widget/loading_page.dart';
 import 'package:friendly_card_web/models/users.dart';
@@ -119,7 +120,8 @@ class TopicManagmentScreen extends StatelessWidget {
                     Divider(),
                     listTopic.value
                             .where((item) =>
-                                item.active == (currentPage.value == 0))
+                                item.status ==
+                                Tool.listStatus[currentPage.value]['value'])
                             .isEmpty
                         ? EmptyData()
                         : Expanded(
@@ -129,7 +131,8 @@ class TopicManagmentScreen extends StatelessWidget {
                             mainAxisSpacing: 8,
                             children: listTopic.value
                                 .where((item) =>
-                                    item.active == (currentPage.value == 0))
+                                    item.status ==
+                                    Tool.listStatus[currentPage.value]['value'])
                                 .map(
                                   (item) => topicItem(context, item),
                                 )
@@ -158,18 +161,32 @@ class TopicManagmentScreen extends StatelessWidget {
                     color: Colors.white,
                   ),
                   selectedItemColor: Colors.white,
-                  items: [
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.check_circle),
-                      label:
-                          'Đã được duyệt (${listTopic.value.where((item) => item.active).length})',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.cancel),
-                      label:
-                          'Đang chờ duyệt (${listTopic.value.where((item) => !item.active).length})',
-                    ),
-                  ],
+                  items: Tool.listStatus
+                      .map(
+                        (status) => BottomNavigationBarItem(
+                          icon: Icon(Icons.check_circle),
+                          label:
+                              '${status['label']} (${listTopic.value.where((item) => item.status == status['value']).length})',
+                        ),
+                      )
+                      .toList(),
+                  // items: [
+                  // BottomNavigationBarItem(
+                  //   icon: Icon(Icons.check_circle),
+                  //   label:
+                  //       'Đã được duyệt (${listTopic.value.where((item) => item.status == 'active').length})',
+                  // ),
+                  // BottomNavigationBarItem(
+                  //   icon: Icon(Icons.cancel),
+                  //   label:
+                  //       'Chờ duyệt (${listTopic.value.where((item) => item.status == 'draft').length})',
+                  // ),
+                  // BottomNavigationBarItem(
+                  //   icon: Icon(Icons.cancel),
+                  //   label:
+                  //       'Không duyệt (${listTopic.value.where((item) => item.status == 'inactive').length})',
+                  // ),
+                  // ],
                   currentIndex: currentPage.value,
                   onTap: (value) {
                     currentPage.value = value;
@@ -192,6 +209,12 @@ class TopicManagmentScreen extends StatelessWidget {
               .firstWhereOrNull((t) => t.id == item.user_id) ??
           Users.initTeacher();
     }
+    var itemColor =
+        (Tool.listStatus.firstWhereOrNull((s) => s['value'] == item.status) ??
+            Tool.listStatus[0])['color'];
+    // var itemStatusLabel =
+    //     (Tool.listStatus.firstWhereOrNull((s) => s['value'] == item.status) ??
+    //         Tool.listStatus[0])['label'];
     return Container(
       margin: EdgeInsets.symmetric(
         horizontal: Get.width * 0.03,
@@ -239,45 +262,65 @@ class TopicManagmentScreen extends StatelessWidget {
                   child: PopupMenuButton<String>(
                     child: Icon(
                       Icons.circle,
-                      color: item.active ? AppColor.blue : Colors.grey,
+                      color: itemColor,
                     ),
                     color: AppColor.lightBlue,
                     itemBuilder: (context) =>
                         usersController.user.value.role == 'teacher'
                             ? []
-                            : [
-                                item.active
-                                    ? PopupMenuItem(
-                                        value: 'lock',
-                                        child: ListTile(
-                                          leading: Icon(
-                                            Icons.circle,
-                                            color: Colors.grey,
-                                          ),
-                                          textColor: Colors.grey,
-                                          titleTextStyle: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          title: Text('Chờ duyệt'),
-                                        ),
-                                      )
-                                    : PopupMenuItem(
-                                        value: 'active',
-                                        child: ListTile(
-                                          leading: Icon(
-                                            Icons.circle,
-                                            color: AppColor.blue,
-                                          ),
-                                          textColor: AppColor.blue,
-                                          titleTextStyle: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          title: Text('Duyệt'),
-                                        ),
+                            : Tool.listStatus
+                                .where((stt) => stt['value'] != item.status)
+                                .map(
+                                  (stt) => PopupMenuItem(
+                                    value: stt['value'].toString(),
+                                    child: ListTile(
+                                      leading: Icon(
+                                        Icons.circle,
+                                        color: stt['color'],
                                       ),
-                              ],
+                                      textColor: stt['color'],
+                                      titleTextStyle: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      title: Text(stt['label']),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                    // : item.status == 'darft'
+                    //     ? [
+                    //         PopupMenuItem(
+                    //           value: 'active',
+                    //           child: ListTile(
+                    //             leading: Icon(
+                    //               Icons.circle,
+                    //               color: Colors.grey,
+                    //             ),
+                    //             textColor: Colors.grey,
+                    //             titleTextStyle: TextStyle(
+                    //               fontWeight: FontWeight.bold,
+                    //             ),
+                    //             title: Text('Duyệt'),
+                    //           ),
+                    //         ),
+                    //         PopupMenuItem(
+                    //           value: 'inactive',
+                    //           child: ListTile(
+                    //             leading: Icon(
+                    //               Icons.circle,
+                    //               color: AppColor.blue,
+                    //             ),
+                    //             textColor: AppColor.blue,
+                    //             titleTextStyle: TextStyle(
+                    //               fontWeight: FontWeight.bold,
+                    //             ),
+                    //             title: Text('Không duyệt'),
+                    //           ),
+                    //         ),
+                    //       ]
+                    //     : [],
                     onSelected: (value) async {
-                      await topicController.updateTopicStatus(item);
+                      await topicController.updateTopicStatus(item, value);
                     },
                   ),
                 ),
@@ -556,30 +599,30 @@ class TopicManagmentScreen extends StatelessWidget {
                             ],
                           )
                         : SizedBox(),
-                    usersController.user.value.role == 'admin'
-                        ? Row(
-                            children: [
-                              SizedBox(
-                                width: 64,
-                              ),
-                              ElevatedButton(
-                                style: ButtonStyle(
-                                  backgroundColor:
-                                      WidgetStatePropertyAll(AppColor.warm),
-                                  foregroundColor:
-                                      WidgetStatePropertyAll(Colors.white),
-                                ),
-                                onPressed: () async {
-                                  await topicController.updateTopicStatus(
-                                      topicController.topic.value);
-                                },
-                                child: Text(topicController.topic.value.active
-                                    ? 'Chờ duyệt'
-                                    : 'Duyệt'),
-                              ),
-                            ],
-                          )
-                        : SizedBox(),
+                    // usersController.user.value.role == 'admin'
+                    //     ? Row(
+                    //         children: [
+                    //           SizedBox(
+                    //             width: 64,
+                    //           ),
+                    //           ElevatedButton(
+                    //             style: ButtonStyle(
+                    //               backgroundColor:
+                    //                   WidgetStatePropertyAll(AppColor.warm),
+                    //               foregroundColor:
+                    //                   WidgetStatePropertyAll(Colors.white),
+                    //             ),
+                    //             onPressed: () async {
+                    //               await topicController.updateTopicStatus(
+                    //                   topicController.topic.value);
+                    //             },
+                    //             child: Text(topicController.topic.value.active
+                    //                 ? 'Chờ duyệt'
+                    //                 : 'Duyệt'),
+                    //           ),
+                    //         ],
+                    //       )
+                    //     : SizedBox(),
                   ],
                 ),
               ],

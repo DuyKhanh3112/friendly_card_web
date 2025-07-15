@@ -110,10 +110,10 @@ class VocabularyController extends GetxController {
     }
   }
 
-  Future<void> updateStatusVocabulary(Vocabulary item) async {
+  Future<void> updateStatusVocabulary(Vocabulary item, String status) async {
     loading.value = true;
     item.update_at = Timestamp.now();
-    item.active = !item.active;
+    item.status = status;
     await vocabularyCollection.doc(item.id).update(item.toVal());
     await loadVocabularyTopic();
     loading.value = false;

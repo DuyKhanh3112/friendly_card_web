@@ -7,7 +7,7 @@ class Vocabulary {
   String topic_id;
   String name;
   Timestamp update_at;
-  bool active;
+  String status;
   String image;
   String mean;
   String example;
@@ -19,7 +19,7 @@ class Vocabulary {
     required this.topic_id,
     required this.name,
     required this.update_at,
-    required this.active,
+    required this.status,
     required this.image,
     required this.example,
     required this.mean_example,
@@ -33,7 +33,7 @@ class Vocabulary {
       name: '',
       topic_id: '',
       update_at: Timestamp.now(),
-      active: false,
+      status: 'draft',
       image: '',
       example: '',
       mean: '',
@@ -47,7 +47,7 @@ class Vocabulary {
         id: json['id'],
         name: json['name'],
         topic_id: json['topic_id'],
-        active: json['active'],
+        status: json['status'] ?? 'draft',
         update_at: json['update_at'],
         image: json['image'],
         example: json['example'],
@@ -61,7 +61,7 @@ class Vocabulary {
       'id': id,
       'name': name,
       'topic_id': topic_id,
-      'active': active,
+      'status': status,
       'update_at': update_at,
       'image': image,
       'example': example,
@@ -76,7 +76,7 @@ class Vocabulary {
       // 'id': id,
       'name': name,
       'topic_id': topic_id,
-      'active': active,
+      'status': status,
       'update_at': update_at,
       'image': image,
       'example': example,

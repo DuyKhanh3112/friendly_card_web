@@ -11,6 +11,7 @@ import 'package:friendly_card_web/controllers/users_controller.dart';
 import 'package:friendly_card_web/controllers/vocabulary_controller.dart';
 import 'package:friendly_card_web/models/vocabulary.dart';
 import 'package:friendly_card_web/utils/app_color.dart';
+import 'package:friendly_card_web/utils/tool.dart';
 import 'package:friendly_card_web/widget/loading_page.dart';
 import 'package:get/get.dart';
 import 'package:image_picker_web/image_picker_web.dart';
@@ -53,7 +54,7 @@ class VocabularyManagmentScreen extends StatelessWidget {
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: usersController.user.value.role == 'teacher'
+                          children: usersController.user.value.role == ''
                               ? [
                                   Container(
                                     width: Get.width * 0.4,
@@ -98,8 +99,9 @@ class VocabularyManagmentScreen extends StatelessWidget {
                                       title: 'Tạo từ vựng tự động',
                                       bgColor: AppColor.blue,
                                       onClicked: () async {
-                                        await vocabularyController
-                                            .generateVocabulary();
+                                        // await vocabularyController
+                                        //     .generateVocabulary();
+                                        final formKey = GlobalKey<FormState>();
                                       },
                                     ),
                                   ),
@@ -147,7 +149,8 @@ class VocabularyManagmentScreen extends StatelessWidget {
                             mainAxisSpacing: 8,
                             children: vocabularyController.listVocabulary.value
                                 .where((item) =>
-                                    item.active == (currentPage.value == 0))
+                                    item.status ==
+                                    Tool.listStatus[currentPage.value]['value'])
                                 .map((item) {
                               return vocabularyItem(item);
                             }).toList()),
@@ -175,18 +178,15 @@ class VocabularyManagmentScreen extends StatelessWidget {
                     color: Colors.white,
                   ),
                   selectedItemColor: Colors.white,
-                  items: [
-                    BottomNavigationBarItem(
-                      icon: const Icon(Icons.check_circle),
-                      label:
-                          'Đã được duyệt (${vocabularyController.listVocabulary.value.where((t) => t.active).length})',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: const Icon(Icons.cancel),
-                      label:
-                          'Đang chờ duyệt (${vocabularyController.listVocabulary.value.where((t) => !t.active).length})',
-                    ),
-                  ],
+                  items: Tool.listStatus
+                      .map(
+                        (status) => BottomNavigationBarItem(
+                          icon: Icon(Icons.check_circle),
+                          label:
+                              '${status['label']} (${vocabularyController.listVocabulary.value.where((item) => item.status == status['value']).length})',
+                        ),
+                      )
+                      .toList(),
                   currentIndex: currentPage.value,
                   onTap: (value) {
                     currentPage.value = value;
@@ -472,29 +472,38 @@ class VocabularyManagmentScreen extends StatelessWidget {
                         : SizedBox(),
                     usersController.user.value.role == 'admin'
                         ? Row(
-                            children: [
-                              SizedBox(
-                                width: 64,
-                              ),
-                              ElevatedButton(
-                                style: ButtonStyle(
-                                  backgroundColor:
-                                      WidgetStatePropertyAll(AppColor.warm),
-                                  foregroundColor:
-                                      WidgetStatePropertyAll(Colors.white),
-                                ),
-                                onPressed: () async {
-                                  await vocabularyController
-                                      .updateStatusVocabulary(
-                                          vocabularyController
-                                              .vocabulary.value);
-                                },
-                                child: Text(
-                                    vocabularyController.vocabulary.value.active
-                                        ? 'Chờ duyệt'
-                                        : 'Duyệt'),
-                              ),
-                            ],
+                            children: Tool.listStatus
+                                .where((stt) =>
+                                    stt['value'] !=
+                                    vocabularyController
+                                        .vocabulary.value.status)
+                                .map((stt) => Row(
+                                      children: [
+                                        SizedBox(
+                                          width: 64,
+                                        ),
+                                        ElevatedButton(
+                                          style: ButtonStyle(
+                                            backgroundColor:
+                                                WidgetStatePropertyAll(
+                                                    AppColor.warm),
+                                            foregroundColor:
+                                                WidgetStatePropertyAll(
+                                                    Colors.white),
+                                          ),
+                                          onPressed: () async {
+                                            Get.back();
+                                            await vocabularyController
+                                                .updateStatusVocabulary(
+                                                    vocabularyController
+                                                        .vocabulary.value,
+                                                    stt['value']);
+                                          },
+                                          child: stt['label'],
+                                        ),
+                                      ],
+                                    ))
+                                .toList(),
                           )
                         : SizedBox(),
                   ],
@@ -508,9 +517,11 @@ class VocabularyManagmentScreen extends StatelessWidget {
   }
 
   Widget vocabularyItem(Vocabulary item) {
-    UsersController usersController = Get.find<UsersController>();
     VocabularyController vocabularyController =
         Get.find<VocabularyController>();
+    var itemColor =
+        (Tool.listStatus.firstWhereOrNull((s) => s['value'] == item.status) ??
+            Tool.listStatus[0])['color'];
     return Stack(
       alignment: Alignment.topRight,
       children: [
@@ -622,46 +633,34 @@ class VocabularyManagmentScreen extends StatelessWidget {
           child: PopupMenuButton<String>(
             child: Icon(
               Icons.circle,
-              color: item.active ? AppColor.blue : Colors.grey,
+              color: itemColor,
             ),
             color: AppColor.lightBlue,
             itemBuilder: (context) =>
-                usersController.user.value.role == 'teacher'
+                Get.find<UsersController>().user.value.role == 'teacher'
                     ? []
-                    : [
-                        item.active
-                            ? const PopupMenuItem(
-                                value: 'lock',
-                                child: ListTile(
-                                  leading: Icon(
-                                    Icons.circle,
-                                    color: Colors.grey,
-                                  ),
-                                  textColor: Colors.grey,
-                                  titleTextStyle: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  title: Text('Chờ duyệt'),
-                                ),
-                              )
-                            : PopupMenuItem(
-                                value: 'active',
-                                child: ListTile(
-                                  leading: Icon(
-                                    Icons.circle,
-                                    color: AppColor.blue,
-                                  ),
-                                  textColor: AppColor.blue,
-                                  titleTextStyle: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  title: const Text('Duyệt'),
-                                ),
+                    : Tool.listStatus
+                        .where((stt) => stt['value'] != item.status)
+                        .map(
+                          (stt) => PopupMenuItem(
+                            value: stt['value'].toString(),
+                            child: ListTile(
+                              leading: Icon(
+                                Icons.circle,
+                                color: stt['color'],
                               ),
-                      ],
+                              textColor: stt['color'],
+                              titleTextStyle: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                              title: Text(stt['label']),
+                            ),
+                          ),
+                        )
+                        .toList(),
             onSelected: (value) async {
               // await topicController.updateTopicStatus(item);
-              await vocabularyController.updateStatusVocabulary(item);
+              await vocabularyController.updateStatusVocabulary(item, value);
             },
           ),
         ),

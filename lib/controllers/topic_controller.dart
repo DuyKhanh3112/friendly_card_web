@@ -72,10 +72,10 @@ class TopicController extends GetxController {
     loading.value = false;
   }
 
-  Future<void> updateTopicStatus(Topic item) async {
+  Future<void> updateTopicStatus(Topic item, String status) async {
     loading.value = true;
     item.update_at = Timestamp.now();
-    item.active = !item.active;
+    item.status = status;
     await topicCollection.doc(item.id).update(item.toVal());
     await loadAllTopic();
     loading.value = false;

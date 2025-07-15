@@ -1,6 +1,14 @@
 import 'dart:convert';
 
+import 'package:friendly_card_web/utils/app_color.dart';
+
 class Tool {
+  static List<Map<String, dynamic>> listStatus = [
+    {'value': 'draft', 'label': 'Chờ duyệt', 'color': AppColor.warm},
+    {'value': 'active', 'label': 'Đã duyệt', 'color': AppColor.green},
+    {'value': 'inactive', 'label': 'Không duyệt', 'color': AppColor.grey},
+  ];
+
   static String extractJsonArray(String input) {
     final regex = RegExp(r'```json\s*(\[.*?\])\s*```', dotAll: true);
     final match = regex.firstMatch(input);
@@ -47,4 +55,11 @@ class Tool {
     ];
     return num >= listChar.length ? '' : listChar[num];
   }
+
+  // static String getLabelStatus(String status) {
+  //   if (status == 'draft') {
+  //     return 'Đang chờ duyệt';
+  //   }
+  //   return '';
+  // }
 }

@@ -38,6 +38,81 @@ class TeacherPage extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                       foregroundColor: Colors.white,
+                      actions: [
+                        PopupMenuButton<String>(
+                          onSelected: (value) async {
+                            if (value == 'logout') {
+                              await usersController.logout();
+                              return;
+                            }
+                            if (value == 'profile') {
+                              mainController.numPageTeacher.value = 0;
+                              return;
+                            }
+                          },
+                          itemBuilder: (context) => [
+                            PopupMenuItem<String>(
+                              value: 'profile',
+                              labelTextStyle: WidgetStatePropertyAll(
+                                TextStyle(
+                                  fontSize: 18,
+                                  color: AppColor.blue,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Image.asset(
+                                    'images/personal_info_icon.png',
+                                    width: 32,
+                                  ),
+                                  const SizedBox(
+                                    width: 16,
+                                  ),
+                                  const Text('Thông tin cá nhân'),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem<String>(
+                              value: 'logout',
+                              labelTextStyle: WidgetStatePropertyAll(
+                                TextStyle(
+                                  fontSize: 18,
+                                  color: AppColor.warm,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Image.asset(
+                                    'images/logout_icon.png',
+                                    width: 32,
+                                  ),
+                                  const SizedBox(
+                                    width: 16,
+                                  ),
+                                  const Text('Đăng xuất'),
+                                ],
+                              ),
+                            ),
+                          ],
+                          icon: Row(
+                            children: [
+                              Text(
+                                usersController.user.value.fullname,
+                                style: const TextStyle(
+                                  // fontSize: 28,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const Icon(Icons.arrow_drop_down_outlined)
+                            ],
+                          ),
+                          iconColor: Colors.white,
+                          iconSize: 24,
+                        ),
+                      ],
                     ),
                     body: mainController
                         .pageTeacher[mainController.numPageTeacher.value],

@@ -8,7 +8,7 @@ class Question {
   String content;
   String mean;
   String topic_id;
-  bool active;
+  String status;
   Timestamp update_at;
 
   Question({
@@ -18,7 +18,7 @@ class Question {
     required this.mean,
     required this.topic_id,
     required this.update_at,
-    required this.active,
+    required this.status,
   });
 
   factory Question.initQuestion() {
@@ -29,7 +29,7 @@ class Question {
       mean: '',
       topic_id: '',
       update_at: Timestamp.now(),
-      active: false,
+      status: 'draft',
     );
   }
 
@@ -41,7 +41,7 @@ class Question {
       mean: json['mean'],
       topic_id: json['topic_id'],
       update_at: json['update_at'],
-      active: json['active'],
+      status: json['status'] ?? 'draft',
     );
   }
 
@@ -53,7 +53,7 @@ class Question {
       'mean': mean,
       'topic_id': topic_id,
       'update_at': update_at,
-      'active': active
+      'status': status
     };
   }
 
@@ -65,7 +65,7 @@ class Question {
       'mean': mean,
       'topic_id': topic_id,
       'update_at': update_at,
-      'active': active
+      'status': status
     };
   }
 }

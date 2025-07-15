@@ -146,9 +146,9 @@ class QuestionController extends GetxController {
     }
   }
 
-  Future<void> updateStatusQuestion(Question item) async {
+  Future<void> updateStatusQuestion(Question item, String status) async {
     loading.value = true;
-    item.active = !item.active;
+    item.status = status;
     item.update_at = Timestamp.now();
     await questionCollection.doc(item.id).update(item.toVal());
     await loadQuestion();
@@ -230,7 +230,7 @@ class QuestionController extends GetxController {
               mean: item['mean_question'],
               topic_id: topicController.topic.value.id,
               update_at: Timestamp.now(),
-              active: false,
+              status: 'draft',
             );
             await createQuestionGenerate(
                 quest, item['options'], item['result'].toString());

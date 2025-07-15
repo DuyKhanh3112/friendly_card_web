@@ -7,7 +7,7 @@ class Topic {
   String user_id;
   String name;
   Timestamp update_at;
-  bool active;
+  String status;
   String image;
 
   Topic({
@@ -15,7 +15,7 @@ class Topic {
     required this.user_id,
     required this.name,
     required this.update_at,
-    required this.active,
+    required this.status,
     required this.image,
   });
 
@@ -25,7 +25,7 @@ class Topic {
       name: '',
       user_id: '',
       update_at: Timestamp.now(),
-      active: false,
+      status: 'draft',
       image: '',
     );
   }
@@ -35,7 +35,7 @@ class Topic {
       id: json['id'],
       name: json['name'],
       user_id: json['user_id'],
-      active: json['active'],
+      status: json['status'] ?? 'draft',
       update_at: json['update_at'],
       image: json['image'],
     );
@@ -46,7 +46,7 @@ class Topic {
       'id': id,
       'name': name,
       'user_id': user_id,
-      'active': active,
+      'status': status,
       'update_at': update_at,
       'image': image,
     };
@@ -57,7 +57,7 @@ class Topic {
       // 'id': id,
       'name': name,
       'user_id': user_id,
-      'active': active,
+      'status': status,
       'update_at': update_at,
       'image': image,
     };
