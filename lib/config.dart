@@ -12,14 +12,7 @@ class Config {
     {'value': 'teacher', 'label': 'Giáo viên chuyên môn'},
     {'value': 'learner', 'label': 'Người học'}
   ];
-  // {
-  //   'admin': 'Quản trị viên',
-  //   'teacher': 'Quản trị viên',
-  //   'learner': 'Người học'
-  // };
   static String API_KEY = 'AIzaSyDB_IG4rGYmaFGxjJcny3sepz-yTwa29sw';
   static String API_KEY_PEXELS =
       'xmmmP7bh7PzHk1tYtNiZdq14KCGOsP4kuO9nyhwNS00jbSqZJHIFzJ6w';
-
-  static int num_generate = 5;
 }
